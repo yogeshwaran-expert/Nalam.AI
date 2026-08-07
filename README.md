@@ -1,63 +1,54 @@
-# ArogyaSight AI — Layout-Aware Medical Document Extraction
+Nalam AI
 
-A multimodal extraction pipeline that reads handwritten Indian medical documents (prescriptions, lab reports) and produces structured JSON + doctor-facing clinical summaries.
+Layout-Aware Document Intelligence + Vernacular Voice Explainer for India's Healthcare System
 
-## Quick Start
+🩺 The Problem
 
-### 1. Install dependencies
-```bash
-pip install -r requirements.txt
-```
+Millions of Indians receive handwritten prescriptions, lab reports, and government forms filled with multi-column layouts, tables, and illegible handwriting. Standard AI tools like ChatGPT and Google Lens misread these documents — jumbling column order, corrupting tables, and misreading handwriting. In a medical setting, this creates real danger: a misread dosage or diagnosis can reach a patient who has no way to verify it, especially non-English-speaking rural and semi-urban populations with low health literacy.
 
-### 2. Set your Anthropic API key
-```bash
-cp .env.example .env
-# Edit .env and paste your API key
-```
+Over 65% of medical consultations in India experience critical triage delays due to overcrowding, and millions of patients struggle to understand dense lab reports or dosage instructions on their own.
 
-### 3. Run the server
-```bash
-uvicorn api.main:app --reload
-```
+💡 The Solution
 
-### 4. Call the endpoint
-```bash
-curl -X POST http://localhost:8000/extract \
-  -F "file=@path/to/prescription.jpg"
-```
+Nalam AI reads medical documents the way a human eye does — understanding visual layout, tables, and columns before extracting content — and converts messy documents into two outputs:
 
-### Response format
-```json
-{
-  "structured_data": { "document_type": "prescription", "medicines": [...], ... },
-  "doctor_note": "══ CLINICAL SUMMARY ══ ...",
-  "extraction_warnings": []
-}
-```
+For doctors/hospitals: Clean, structured JSON data ready for EHR integration
+For patients: A simple, spoken voice explanation in their local language (Hindi, Tamil, Tanglish) describing what the document actually means — e.g., "Take 1 Metformin pill after dinner for 30 days."
 
-## Project Structure
-```
-extraction/          # Core extraction pipeline
-  schemas.py         # Pydantic models (locked JSON schema)
-  prompts.py         # VLM prompt templates
-  vlm_extractor.py   # Claude Vision extraction logic
-doctor_note/         # Doctor-facing output
-  note_formatter.py  # Structured JSON → clinical summary
-api/                 # FastAPI server
-  main.py            # POST /extract endpoint
-tests/               # Test harness
-  test_extraction.py # Batch test against sample images
-data/
-  sample_documents/  # Drop sample images here
-```
+Every extracted value is cross-checked against a verified medical guideline knowledge base, flagging anomalies (unusual dosages, out-of-range lab values) before they reach the patient — the project's core "zero-hallucination" safety layer.
 
-## API Endpoint
+✨ Features
+Layout-aware extraction — correctly reads multi-column lab reports and tables instead of jumbling text left-to-right
+Handwriting interpretation — understands common Indian prescription shorthand (OD, BD, TDS, 1-0-1 dosing patterns)
+Guideline-grounded safety flagging — every flag is sourced from a verified knowledge base, never invented by the model
+Dual output — one pipeline, two audiences: structured JSON for doctors, spoken explanation for patients
+Vernacular voice output — including code-mixed Tanglish, matching how patients actually speak
+Confidence scoring — the system flags what it's unsure about rather than guessing
 
-| Method | Path | Body | Response |
-|--------|------|------|----------|
-| `POST` | `/extract` | `file` (multipart image: JPEG/PNG/WEBP) | `{ structured_data, doctor_note, extraction_warnings }` |
-| `GET` | `/health` | — | `{ "status": "healthy" }` |
+🆚 How This Differs From Others
+	Existing tools (Sarvam Vision, Lekhak, Lifemaan)	Nalam AI
+Primary audience	Institutions / hospitals / EHR systems	Patients directly
+Output format	Structured data only	Structured data + spoken vernacular explanation
+Safety checks	Clinician-facing flags	Patient-facing safety warnings, phrased for a non-expert
+Language handling	Monolingual regional languages	Code-mixed Tanglish/Hinglish, matching real speech
 
-## For Teammates
-- Import `extraction.schemas` to validate responses against the locked Pydantic models
-- The JSON schema is frozen — any changes will be communicated before merging
+Existing tools solve the institution's problem — getting messy documents into clean data. We solve the patient's problem — turning that data into something they can actually understand and act on safely.
+
+🛠️ Tech Stack
+Layer	Technology
+Document extraction	Claude (Anthropic API, vision) — VLM-based layout-aware parsing
+Safety/guideline check	Curated JSON knowledge base + fuzzy matching (rapidfuzz)
+Voice output	Sarvam AI TTS / Google Cloud TTS (Indic multilingual voices)
+Backend	Python, FastAPI, Pydantic
+Frontend	React (Stitch-generated UI), Framer Motion, Tailwind CSS
+Hosting (demo)	Vercel/Netlify (frontend), Render/Railway (backend)
+Version control	GitHub
+
+🎯 Expected Outcomes
+Reduced medication errors from misread or misunderstood prescriptions
+Faster, cleaner documentation for doctors and hospital systems
+Improved health literacy and autonomy for patients who currently rely on guesswork or informal interpretation of their own medical records
+
+⚠️ Disclaimer
+
+Nalam AI is a decision-support and health-literacy tool. It does not diagnose, prescribe, or replace professional medical advice. All safety flags are advisory — patients and doctors should always verify with a qualified healthcare professional.
