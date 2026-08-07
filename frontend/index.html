@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nalam AI — Read your prescriptions in your language</title>
+  <meta name="description" content="Upload a photo of your handwritten prescription or lab report. Nalam AI reads it, checks it for safety, and explains it to you in Hindi, Tamil, or Tanglish." />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== NAV ===== -->
+    <header class="nav">
+      <div class="nav__inner">
+        <a class="nav__brand" href="#top">
+          <span class="nav__mark">ஆ</span>
+          <span class="nav__name">Nalam <em>AI</em></span>
+        </a>
+        <nav class="nav__links">
+          <a href="#how">How it works</a>
+          <a href="#languages">Languages</a>
+          <a href="#safety">Safety</a>
+        </nav>
+        <a class="btn btn--ghost nav__cta" href="#try">Scan a prescription</a>
+      </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="top">
+      <div class="hero__copy">
+        <p class="eyebrow">nalam · நலம் · wellness, made legible</p>
+        <h1 class="hero__title">
+          Here you can't read.<br />
+          <span class="ink-underline">Nalam reads it for you.</span>
+        </h1>
+        <p class="hero__sub">
+          Photograph a prescription, lab report, or medicine strip. Nalam AI
+          decodes the scrawl, checks it for anything unusual, and reads it back to you
+          in Hindi, Tamil, or Tanglish.
+        </p>
+        <div class="hero__actions">
+          <a href="#try" class="btn btn--primary">Upload your prescription</a>
+          <a href="#how" class="btn btn--text">See how it works ↓</a>
+        </div>
+        <p class="hero__scroll-hint">scroll — watch the ink clear up</p>
+      </div>
+
+      <div class="hero-stage" id="heroStage">
+        <div class="hero-card" id="heroCard">
+          <div class="rx-face rx-face--scrawl">
+            <div class="rx-face__letterhead">
+              <span>Dr. R. Subramaniam · MBBS, MD</span>
+              <span>General Physician</span>
+            </div>
+            <p class="rx-scrawl-line">Tab. Amoxyclav 625mg</p>
+            <p class="rx-scrawl-line">1-0-1 × 5 days, after food</p>
+            <p class="rx-scrawl-line">Syp. Cough Linctus 10ml TDS</p>
+            <p class="rx-scrawl-line rx-scrawl-line--stamp">Rx</p>
+          </div>
+          <div class="rx-face rx-face--clear">
+            <div class="rx-face__tag">Explained in Tamil</div>
+            <p class="rx-clear-line">அமோக்ஸிக்ளாவ் 625mg — காலை, இரவு, 5 நாட்கள், சாப்பிட்ட பின்</p>
+            <p class="rx-clear-line">இருமல் சிரப் — நாளுக்கு 3 முறை, 10ml</p>
+            <p class="rx-clear-badge">✓ Dosage checked · No conflicts found</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONTEXT ===== -->
+    <section class="context">
+      <div class="context__inner">
+        <p class="context__lead">
+          A prescription is only useful if someone can read it. Between rushed
+          handwriting, medical shorthand, and a language you didn't grow up reading,
+          it's easy to end up guessing — with medicine.
+        </p>
+        <p class="context__sub">Nalam AI removes the guessing.</p>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="how" id="how">
+      <p class="section-eyebrow">how it works</p>
+      <h2 class="section-title">Three steps, one clear answer</h2>
+
+      <div class="steps">
+        <article class="step" style="--depth: 0">
+          <span class="step__num">01</span>
+          <h3>Photograph it</h3>
+          <p>Point your phone at any prescription, lab report, or medicine strip. No special scanner needed.</p>
+        </article>
+        <article class="step" style="--depth: 1">
+          <span class="step__num">02</span>
+          <h3>AI reads and checks it</h3>
+          <p>Nalam decodes the handwriting, cross-checks the dosage, and flags anything that looks unusual.</p>
+        </article>
+        <article class="step" style="--depth: 2">
+          <span class="step__num">03</span>
+          <h3>Hear it, in your language</h3>
+          <p>Read or listen to a plain-language explanation in Hindi, Tamil, or Tanglish.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== LANGUAGES ===== -->
+    <section class="languages" id="languages">
+      <p class="section-eyebrow">choose how you read</p>
+      <h2 class="section-title">Explained the way you actually speak</h2>
+      <p class="section-sub">Tap a card to see it flip.</p>
+
+      <div class="lang-grid">
+        <button class="lang-card" data-lang="hindi">
+          <div class="lang-card__inner">
+            <div class="lang-card__face lang-card__face--front">
+              <span class="lang-card__script">हिंदी</span>
+              <span class="lang-card__name">Hindi</span>
+            </div>
+            <div class="lang-card__face lang-card__face--back">
+              <p class="lang-card__sample">"दिन में दो बार, खाने के बाद लें"</p>
+              <span class="lang-card__meta">Twice a day, after food</span>
+            </div>
+          </div>
+        </button>
+
+        <button class="lang-card" data-lang="tamil">
+          <div class="lang-card__inner">
+            <div class="lang-card__face lang-card__face--front">
+              <span class="lang-card__script">தமிழ்</span>
+              <span class="lang-card__name">Tamil</span>
+            </div>
+            <div class="lang-card__face lang-card__face--back">
+              <p class="lang-card__sample">"காலை, இரவு — சாப்பிட்ட பிறகு"</p>
+              <span class="lang-card__meta">Morning, night — after food</span>
+            </div>
+          </div>
+        </button>
+
+        <button class="lang-card" data-lang="tanglish">
+          <div class="lang-card__inner">
+            <div class="lang-card__face lang-card__face--front">
+              <span class="lang-card__script">Tanglish</span>
+              <span class="lang-card__name">Naturally mixed</span>
+            </div>
+            <div class="lang-card__face lang-card__face--back">
+              <p class="lang-card__sample">"Rendu vaati saapten piragu eduthukonga"</p>
+              <span class="lang-card__meta">Take it twice, after eating</span>
+            </div>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== SAFETY ===== -->
+    <section class="safety" id="safety">
+      <div class="safety__copy">
+        <p class="section-eyebrow">before anything reaches you</p>
+        <h2 class="section-title">Every reading gets checked first</h2>
+        <p class="section-sub">
+          Nalam cross-references dosage and known interactions before it explains
+          anything back to you — and it always tells you when something needs a second
+          opinion.
+        </p>
+        <ul class="safety__list">
+          <li><strong>Dosage check</strong> — flags amounts outside the typical range.</li>
+          <li><strong>Interaction flags</strong> — warns if two medicines don't mix well.</li>
+          <li><strong>Handwriting confidence</strong> — tells you when it isn't sure, instead of guessing.</li>
+        </ul>
+      </div>
+      <div class="safety__seal-stage">
+        <div class="safety__seal">
+          <span class="safety__seal-text">VERIFIED<br />READING</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TRY IT ===== -->
+    <section class="try" id="try">
+      <p class="section-eyebrow">get started</p>
+      <h2 class="section-title">Upload your prescription</h2>
+      <p class="section-sub">A photo of a prescription, lab report, or medicine strip — JPG, PNG, or WebP.</p>
+
+      <div class="try-panel">
+
+        <!-- Mode toggle -->
+        <div class="mode-toggle">
+          <span class="mode-toggle__label is-active" id="mockLabel">Mock</span>
+          <div class="mode-toggle__switch" id="modeSwitch" role="switch" aria-checked="false" aria-label="Toggle between mock and live mode" tabindex="0"></div>
+          <span class="mode-toggle__label" id="liveLabel">Live</span>
+        </div>
+
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a prescription image">
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+          <div class="dropzone__content" id="dropzoneEmpty">
+            <span class="dropzone__icon">📄</span>
+            <p class="dropzone__title">Drop your prescription here</p>
+            <p class="dropzone__sub">or click to browse · JPG, PNG, WebP up to 10MB</p>
+          </div>
+          <div class="dropzone__preview" id="dropzonePreview" hidden>
+            <img id="previewImg" alt="Uploaded prescription preview" hidden />
+            <div class="dropzone__file-chip" id="previewFileChip" hidden>
+              <span>📎</span>
+              <span id="previewFileName"></span>
+            </div>
+            <button class="dropzone__clear" id="clearUpload" type="button" aria-label="Remove file">Remove ✕</button>
+          </div>
+        </div>
+
+        <div class="try-panel__lang-select" role="tablist" aria-label="Choose a language">
+          <button class="try-panel__lang-btn is-active" data-demo-lang="hindi">Hindi</button>
+          <button class="try-panel__lang-btn" data-demo-lang="tamil">Tamil</button>
+          <button class="try-panel__lang-btn" data-demo-lang="tanglish">Tanglish</button>
+        </div>
+
+        <button class="try-panel__demo-btn" id="demoBtn" disabled>
+          <span id="demoBtnLabel">Upload a file to continue</span>
+        </button>
+
+        <div class="try-panel__result" id="demoResult" aria-live="polite">
+          <p class="try-panel__placeholder">Your explanation will appear here.</p>
+        </div>
+
+        <p class="try-panel__note">
+          In <strong>mock mode</strong>, results use sample data — no network required.
+          Switch to <strong>live mode</strong> to hit the ArogyaSight API backend at localhost:8000.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <span class="nav__mark">ந</span>
+          <span class="nav__name">Nalam <em>AI</em></span>
+        </div>
+        <p class="footer__disclaimer">
+          Nalam AI is a reading aid, not a medical diagnosis. Always confirm doses
+          and instructions with your doctor or pharmacist.
+        </p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "structured_data": {
+    "document_type": "prescription",
+    "patient_name": "Ramesh Kumar",
+    "doctor_name": "Dr. Anitha Rao",
+    "date": "2026-07-28",
+    "medicines": [
+      {
+        "name": "Metformin",
+        "dosage": "500mg",
+        "frequency": "twice daily",
+        "duration": "30 days",
+        "instructions": "after food",
+        "confidence": 0.95
+      },
+      {
+        "name": "Amlodipine",
+        "dosage": "5mg",
+        "frequency": "once daily",
+        "duration": "30 days",
+        "instructions": "morning, before food",
+        "confidence": 0.82
+      },
+      {
+        "name": "Ecosprin",
+        "dosage": "75mg",
+        "frequency": "once daily",
+        "duration": "30 days",
+        "instructions": "after dinner",
+        "confidence": 0.91
+      }
+    ],
+    "raw_notes": "Review after 1 month. Check BP weekly.",
+    "extraction_warnings": ["Partially illegible handwriting in line 3"]
+  },
+  "doctor_note": "══ CLINICAL SUMMARY ══\nPatient: Ramesh Kumar | Date: 2026-07-28\nDoctor: Dr. Anitha Rao\n──────────────────────\nRx 1: Metformin 500mg — twice daily after food, 30 days\nRx 2: Amlodipine 5mg — once daily morning before food, 30 days\nRx 3: Ecosprin 75mg — once daily after dinner, 30 days\n──────────────────────\nNotes: Review after 1 month. Check BP weekly.\nFlags: 1 info, 1 caution",
+  "extraction_warnings": ["Partially illegible handwriting in line 3"],
+  "flags": [
+    {
+      "severity": "info",
+      "related_to": "Metformin",
+      "message": "Dosage within normal range for Type 2 Diabetes management.",
+      "source": "knowledge_base"
+    },
+    {
+      "severity": "caution",
+      "related_to": "Amlodipine",
+      "message": "Extraction confidence is 82% — please verify the dosage with the original document.",
+      "source": "unverified"
+    },
+    {
+      "severity": "info",
+      "related_to": "Ecosprin",
+      "message": "Standard antiplatelet dose. No known interactions with other prescribed medications.",
+      "source": "knowledge_base"
+    }
+  ]
+}

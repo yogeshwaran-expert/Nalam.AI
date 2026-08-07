@@ -1,0 +1,445 @@
+{
+  "_meta": {
+    "description": "ArogyaSight AI — Curated Medical Knowledge Base",
+    "version": "1.0.0",
+    "last_updated": "2026-07-28",
+    "notes": [
+      "All dosage ranges and reference values are sourced from publicly available",
+      "WHO, ICMR, BNF, and CDSCO references. Each entry's 'source' field cites",
+      "the origin for auditability.",
+      "This is a HACKATHON-SCALE dataset — quality over quantity.",
+      "DO NOT let an LLM invent or override these values."
+    ]
+  },
+
+  "drugs": [
+    {
+      "name": "Metformin",
+      "aliases": ["Glycomet", "Glumetza", "Glucophage"],
+      "common_dosage_range_mg": [500, 2000],
+      "max_daily_dose_mg": 2550,
+      "common_frequencies": ["once daily", "twice daily", "thrice daily"],
+      "interactions": ["Alcohol", "Contrast dye", "Insulin"],
+      "contraindications": ["Severe renal impairment", "Metabolic acidosis"],
+      "notes": "Take with food to reduce GI upset. Withhold 48h before/after iodinated contrast.",
+      "source": "WHO Model Formulary 2023; BNF 86; CDSCO prescribing information"
+    },
+    {
+      "name": "Paracetamol",
+      "aliases": ["Acetaminophen", "Crocin", "Dolo", "Calpol", "Tylenol"],
+      "common_dosage_range_mg": [325, 1000],
+      "max_daily_dose_mg": 4000,
+      "common_frequencies": ["every 4-6 hours", "thrice daily", "four times daily", "as needed"],
+      "interactions": ["Alcohol", "Warfarin"],
+      "contraindications": ["Severe hepatic impairment"],
+      "notes": "Do not exceed 4g/day. Risk of hepatotoxicity with chronic alcohol use.",
+      "source": "WHO Model Formulary 2023; BNF 86; FDA labelling"
+    },
+    {
+      "name": "Amoxicillin",
+      "aliases": ["Amoxil", "Mox", "Novamox"],
+      "common_dosage_range_mg": [250, 500],
+      "max_daily_dose_mg": 3000,
+      "common_frequencies": ["thrice daily", "twice daily", "every 8 hours"],
+      "interactions": ["Methotrexate", "Warfarin"],
+      "contraindications": ["Penicillin allergy"],
+      "notes": "Complete the full course even if symptoms improve.",
+      "source": "WHO Model Formulary 2023; BNF 86; ICMR STG 2019"
+    },
+    {
+      "name": "Azithromycin",
+      "aliases": ["Zithromax", "Azithral", "Azee"],
+      "common_dosage_range_mg": [250, 500],
+      "max_daily_dose_mg": 500,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Antacids", "Warfarin", "Digoxin"],
+      "contraindications": ["Hepatic impairment", "QT prolongation"],
+      "notes": "Typically prescribed as 3-day or 5-day course. Take 1 hour before or 2 hours after meals.",
+      "source": "WHO Model Formulary 2023; BNF 86; CDSCO"
+    },
+    {
+      "name": "Atorvastatin",
+      "aliases": ["Lipitor", "Atorva", "Tonact"],
+      "common_dosage_range_mg": [10, 40],
+      "max_daily_dose_mg": 80,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Grapefruit juice", "Erythromycin", "Clarithromycin", "Cyclosporine", "Gemfibrozil"],
+      "contraindications": ["Active liver disease", "Pregnancy"],
+      "notes": "Take at bedtime for optimal cholesterol-lowering. Monitor LFTs periodically.",
+      "source": "BNF 86; AHA/ACC lipid guidelines 2018; CDSCO"
+    },
+    {
+      "name": "Amlodipine",
+      "aliases": ["Norvasc", "Amlong", "Amlokind"],
+      "common_dosage_range_mg": [2.5, 10],
+      "max_daily_dose_mg": 10,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Simvastatin", "Cyclosporine", "Grapefruit juice"],
+      "contraindications": ["Severe aortic stenosis", "Cardiogenic shock"],
+      "notes": "Ankle oedema is a common side effect. Can be taken with or without food.",
+      "source": "WHO Model Formulary 2023; BNF 86; ESC/ESH hypertension guidelines 2023"
+    },
+    {
+      "name": "Omeprazole",
+      "aliases": ["Prilosec", "Omez", "Ocid"],
+      "common_dosage_range_mg": [20, 40],
+      "max_daily_dose_mg": 40,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Clopidogrel", "Methotrexate", "Diazepam"],
+      "contraindications": [],
+      "notes": "Take 30 minutes before breakfast. Long-term use may reduce magnesium and B12 absorption.",
+      "source": "WHO Model Formulary 2023; BNF 86; ACG guidelines"
+    },
+    {
+      "name": "Pantoprazole",
+      "aliases": ["Pantocid", "Pan", "Protonix"],
+      "common_dosage_range_mg": [20, 40],
+      "max_daily_dose_mg": 80,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Methotrexate", "Atazanavir"],
+      "contraindications": [],
+      "notes": "Take 30 minutes before a meal. Preferred over omeprazole when patient is on clopidogrel.",
+      "source": "BNF 86; CDSCO; ACG guidelines"
+    },
+    {
+      "name": "Ciprofloxacin",
+      "aliases": ["Cipro", "Ciplox", "Cifran"],
+      "common_dosage_range_mg": [250, 750],
+      "max_daily_dose_mg": 1500,
+      "common_frequencies": ["twice daily", "every 12 hours"],
+      "interactions": ["Antacids", "Iron supplements", "Theophylline", "Warfarin", "NSAIDs"],
+      "contraindications": ["Children under 18", "Tendon disorders", "Myasthenia gravis"],
+      "notes": "Avoid dairy products and antacids 2h before/after. Risk of tendon rupture, especially in elderly.",
+      "source": "WHO Model Formulary 2023; BNF 86; FDA safety communication 2016"
+    },
+    {
+      "name": "Losartan",
+      "aliases": ["Cozaar", "Losacar", "Repace"],
+      "common_dosage_range_mg": [25, 100],
+      "max_daily_dose_mg": 100,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Potassium supplements", "Lithium", "NSAIDs"],
+      "contraindications": ["Pregnancy", "Bilateral renal artery stenosis"],
+      "notes": "Monitor potassium and renal function. Do not use with ACE inhibitors.",
+      "source": "BNF 86; ESC/ESH hypertension guidelines 2023"
+    },
+    {
+      "name": "Cetirizine",
+      "aliases": ["Zyrtec", "Cetzine", "Okacet"],
+      "common_dosage_range_mg": [5, 10],
+      "max_daily_dose_mg": 10,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Alcohol", "CNS depressants"],
+      "contraindications": ["Severe renal impairment"],
+      "notes": "Less sedating than first-generation antihistamines but may still cause drowsiness.",
+      "source": "BNF 86; WHO Model Formulary 2023"
+    },
+    {
+      "name": "Montelukast",
+      "aliases": ["Singulair", "Montair", "Romilast"],
+      "common_dosage_range_mg": [4, 10],
+      "max_daily_dose_mg": 10,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Phenobarbital", "Rifampicin"],
+      "contraindications": [],
+      "notes": "Take in the evening for asthma. FDA boxed warning for neuropsychiatric events.",
+      "source": "BNF 86; GINA asthma guidelines 2023; FDA safety communication 2020"
+    },
+    {
+      "name": "Ibuprofen",
+      "aliases": ["Advil", "Brufen", "Combiflam"],
+      "common_dosage_range_mg": [200, 400],
+      "max_daily_dose_mg": 1200,
+      "common_frequencies": ["thrice daily", "every 6-8 hours", "as needed"],
+      "interactions": ["Aspirin", "Warfarin", "Lithium", "Methotrexate", "ACE inhibitors"],
+      "contraindications": ["Active GI bleeding", "Severe renal impairment", "Third trimester pregnancy"],
+      "notes": "Take with food. Avoid long-term use without medical supervision.",
+      "source": "WHO Model Formulary 2023; BNF 86; FDA labelling"
+    },
+    {
+      "name": "Aspirin",
+      "aliases": ["Ecosprin", "Disprin", "Acetylsalicylic acid"],
+      "common_dosage_range_mg": [75, 325],
+      "max_daily_dose_mg": 4000,
+      "common_frequencies": ["once daily", "as needed"],
+      "interactions": ["Ibuprofen", "Clopidogrel", "Warfarin", "Methotrexate", "SSRIs"],
+      "contraindications": ["Active GI bleeding", "Haemophilia", "Children under 16 (Reye syndrome)"],
+      "notes": "Low-dose (75-150mg) for cardiovascular prophylaxis. Higher doses for analgesia.",
+      "source": "WHO Model Formulary 2023; BNF 86; AHA guidelines"
+    },
+    {
+      "name": "Clopidogrel",
+      "aliases": ["Plavix", "Clopilet", "Deplatt"],
+      "common_dosage_range_mg": [75, 75],
+      "max_daily_dose_mg": 300,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Omeprazole", "Aspirin", "NSAIDs", "Warfarin", "SSRIs"],
+      "contraindications": ["Active bleeding", "Severe hepatic impairment"],
+      "notes": "Loading dose of 300mg may be used in ACS. Avoid omeprazole — use pantoprazole instead.",
+      "source": "BNF 86; ESC DAPT guidelines 2017; CDSCO"
+    },
+    {
+      "name": "Lisinopril",
+      "aliases": ["Zestril", "Listril", "Prinivil"],
+      "common_dosage_range_mg": [5, 20],
+      "max_daily_dose_mg": 40,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Potassium supplements", "NSAIDs", "Lithium", "Losartan"],
+      "contraindications": ["Pregnancy", "Angioedema history", "Bilateral renal artery stenosis"],
+      "notes": "Monitor potassium and renal function. Dry cough is a common side effect.",
+      "source": "WHO Model Formulary 2023; BNF 86; ESC/ESH hypertension guidelines 2023"
+    },
+    {
+      "name": "Glimepiride",
+      "aliases": ["Amaryl", "Glimisave", "Glimestar"],
+      "common_dosage_range_mg": [1, 4],
+      "max_daily_dose_mg": 8,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Alcohol", "Beta-blockers", "Fluconazole", "NSAIDs"],
+      "contraindications": ["Type 1 diabetes", "Diabetic ketoacidosis", "Severe hepatic impairment"],
+      "notes": "Take with breakfast. Risk of hypoglycemia — advise patients to carry glucose tablets.",
+      "source": "BNF 86; ADA Standards of Care 2024; CDSCO"
+    },
+    {
+      "name": "Metoprolol",
+      "aliases": ["Lopressor", "Betaloc", "Met XL"],
+      "common_dosage_range_mg": [25, 100],
+      "max_daily_dose_mg": 200,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Verapamil", "Diltiazem", "Clonidine", "Insulin"],
+      "contraindications": ["Severe bradycardia", "Heart block", "Decompensated heart failure", "Asthma"],
+      "notes": "Do not stop abruptly — taper over 1-2 weeks. May mask hypoglycemia symptoms.",
+      "source": "BNF 86; ESC heart failure guidelines 2023; CDSCO"
+    },
+    {
+      "name": "Doxycycline",
+      "aliases": ["Doxt", "Doxy", "Vibramycin"],
+      "common_dosage_range_mg": [100, 200],
+      "max_daily_dose_mg": 200,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Antacids", "Iron supplements", "Warfarin", "Retinoids"],
+      "contraindications": ["Pregnancy", "Children under 8"],
+      "notes": "Take with plenty of water. Avoid lying down for 30 min after dose. Photosensitivity risk.",
+      "source": "WHO Model Formulary 2023; BNF 86; ICMR STG 2019"
+    },
+    {
+      "name": "Hydroxychloroquine",
+      "aliases": ["Plaquenil", "HCQS", "HCQ"],
+      "common_dosage_range_mg": [200, 400],
+      "max_daily_dose_mg": 400,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Digoxin", "Tamoxifen", "Methotrexate"],
+      "contraindications": ["Retinopathy", "QT prolongation", "G6PD deficiency"],
+      "notes": "Annual eye examination recommended for retinal toxicity screening.",
+      "source": "BNF 86; ACR rheumatoid arthritis guidelines 2021; CDSCO"
+    },
+    {
+      "name": "Levofloxacin",
+      "aliases": ["Levaquin", "Levoflox", "Tavanic"],
+      "common_dosage_range_mg": [250, 750],
+      "max_daily_dose_mg": 750,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Antacids", "Iron supplements", "Theophylline", "Warfarin", "NSAIDs", "Corticosteroids"],
+      "contraindications": ["Tendon disorders", "Epilepsy", "Myasthenia gravis", "Children under 18"],
+      "notes": "Risk of tendon rupture and peripheral neuropathy. Avoid in elderly if alternatives exist.",
+      "source": "WHO Model Formulary 2023; BNF 86; FDA safety communication 2016"
+    },
+    {
+      "name": "Diclofenac",
+      "aliases": ["Voveran", "Voltaren", "Diclogel"],
+      "common_dosage_range_mg": [50, 75],
+      "max_daily_dose_mg": 150,
+      "common_frequencies": ["twice daily", "thrice daily"],
+      "interactions": ["Aspirin", "Warfarin", "Lithium", "Methotrexate", "ACE inhibitors", "Diuretics"],
+      "contraindications": ["Active GI bleeding", "Severe heart failure", "Severe renal impairment"],
+      "notes": "Take with food. Cardiovascular risk increases with prolonged use and higher doses.",
+      "source": "WHO Model Formulary 2023; BNF 86; EMA safety review 2013"
+    },
+    {
+      "name": "Ceftriaxone",
+      "aliases": ["Monocef", "Rocephin", "Ceftri"],
+      "common_dosage_range_mg": [1000, 2000],
+      "max_daily_dose_mg": 4000,
+      "common_frequencies": ["once daily", "twice daily"],
+      "interactions": ["Calcium-containing IV solutions", "Warfarin"],
+      "contraindications": ["Cephalosporin allergy", "Neonates with hyperbilirubinemia"],
+      "notes": "IV/IM administration. Do not mix with calcium-containing solutions in neonates.",
+      "source": "WHO Model Formulary 2023; BNF 86; ICMR STG 2019"
+    },
+    {
+      "name": "Telmisartan",
+      "aliases": ["Telma", "Micardis", "Telsartan"],
+      "common_dosage_range_mg": [20, 80],
+      "max_daily_dose_mg": 80,
+      "common_frequencies": ["once daily"],
+      "interactions": ["Potassium supplements", "Lithium", "NSAIDs", "ACE inhibitors"],
+      "contraindications": ["Pregnancy", "Bilateral renal artery stenosis", "Severe hepatic impairment"],
+      "notes": "Monitor potassium and renal function. Longest half-life among ARBs — good for adherence.",
+      "source": "BNF 86; ESC/ESH hypertension guidelines 2023; ONTARGET trial"
+    },
+    {
+      "name": "Ranitidine",
+      "aliases": ["Zantac", "Rantac", "Aciloc"],
+      "common_dosage_range_mg": [150, 300],
+      "max_daily_dose_mg": 600,
+      "common_frequencies": ["twice daily", "once daily at bedtime"],
+      "interactions": ["Warfarin", "Theophylline", "Ketoconazole"],
+      "contraindications": ["Porphyria"],
+      "notes": "Withdrawn in many countries due to NDMA contamination risk (2020). Consider alternatives.",
+      "source": "BNF 86; FDA NDMA recall 2020; CDSCO advisory"
+    }
+  ],
+
+  "lab_tests": [
+    {
+      "test_name": "Hemoglobin",
+      "aliases": ["Hb", "Hgb", "Haemoglobin"],
+      "unit": "g/dL",
+      "normal_range_male": [13.0, 17.0],
+      "normal_range_female": [12.0, 15.5],
+      "critical_low": 7.0,
+      "critical_high": 20.0,
+      "source": "WHO anaemia classification 2011; ICMR haematology reference ranges"
+    },
+    {
+      "test_name": "Blood Glucose (Fasting)",
+      "aliases": ["FBS", "Fasting Blood Sugar", "Fasting Glucose", "FBG"],
+      "unit": "mg/dL",
+      "normal_range_male": [70, 100],
+      "normal_range_female": [70, 100],
+      "critical_low": 50,
+      "critical_high": 400,
+      "source": "ADA Standards of Care 2024; WHO diabetes diagnostic criteria 2006"
+    },
+    {
+      "test_name": "Blood Glucose (Random)",
+      "aliases": ["RBS", "Random Blood Sugar", "Random Glucose", "GRBS"],
+      "unit": "mg/dL",
+      "normal_range_male": [70, 140],
+      "normal_range_female": [70, 140],
+      "critical_low": 50,
+      "critical_high": 500,
+      "source": "ADA Standards of Care 2024; WHO diabetes diagnostic criteria 2006"
+    },
+    {
+      "test_name": "HbA1c",
+      "aliases": ["Glycated Hemoglobin", "Glycosylated Hemoglobin", "A1c", "HbA1C"],
+      "unit": "%",
+      "normal_range_male": [4.0, 5.6],
+      "normal_range_female": [4.0, 5.6],
+      "critical_low": 3.0,
+      "critical_high": 15.0,
+      "source": "ADA Standards of Care 2024; NGSP standardization"
+    },
+    {
+      "test_name": "Creatinine",
+      "aliases": ["Serum Creatinine", "S. Creatinine", "Creat"],
+      "unit": "mg/dL",
+      "normal_range_male": [0.7, 1.3],
+      "normal_range_female": [0.6, 1.1],
+      "critical_low": 0.2,
+      "critical_high": 10.0,
+      "source": "KDIGO CKD guidelines 2024; ICMR reference ranges"
+    },
+    {
+      "test_name": "Blood Urea Nitrogen",
+      "aliases": ["BUN", "Urea", "Blood Urea"],
+      "unit": "mg/dL",
+      "normal_range_male": [7, 20],
+      "normal_range_female": [7, 20],
+      "critical_low": 2,
+      "critical_high": 100,
+      "source": "KDIGO CKD guidelines 2024; standard clinical chemistry references"
+    },
+    {
+      "test_name": "Total Cholesterol",
+      "aliases": ["Cholesterol", "TC", "Serum Cholesterol"],
+      "unit": "mg/dL",
+      "normal_range_male": [0, 200],
+      "normal_range_female": [0, 200],
+      "critical_low": 50,
+      "critical_high": 400,
+      "source": "AHA/ACC lipid guidelines 2018; NCEP ATP III"
+    },
+    {
+      "test_name": "LDL Cholesterol",
+      "aliases": ["LDL", "LDL-C", "Low Density Lipoprotein"],
+      "unit": "mg/dL",
+      "normal_range_male": [0, 100],
+      "normal_range_female": [0, 100],
+      "critical_low": 20,
+      "critical_high": 300,
+      "source": "AHA/ACC lipid guidelines 2018; ESC dyslipidaemia guidelines 2019"
+    },
+    {
+      "test_name": "HDL Cholesterol",
+      "aliases": ["HDL", "HDL-C", "High Density Lipoprotein"],
+      "unit": "mg/dL",
+      "normal_range_male": [40, 60],
+      "normal_range_female": [50, 60],
+      "critical_low": 20,
+      "critical_high": 100,
+      "source": "AHA/ACC lipid guidelines 2018; NCEP ATP III"
+    },
+    {
+      "test_name": "Triglycerides",
+      "aliases": ["TG", "Trigs", "Serum Triglycerides"],
+      "unit": "mg/dL",
+      "normal_range_male": [0, 150],
+      "normal_range_female": [0, 150],
+      "critical_low": 20,
+      "critical_high": 1000,
+      "source": "AHA/ACC lipid guidelines 2018; NCEP ATP III"
+    },
+    {
+      "test_name": "TSH",
+      "aliases": ["Thyroid Stimulating Hormone", "Thyrotropin", "S. TSH"],
+      "unit": "mIU/L",
+      "normal_range_male": [0.4, 4.0],
+      "normal_range_female": [0.4, 4.0],
+      "critical_low": 0.01,
+      "critical_high": 50.0,
+      "source": "ATA thyroid guidelines 2017; ICMR reference ranges"
+    },
+    {
+      "test_name": "WBC Count",
+      "aliases": ["White Blood Cell Count", "Leukocyte Count", "TLC", "Total Leucocyte Count"],
+      "unit": "cells/μL",
+      "normal_range_male": [4000, 11000],
+      "normal_range_female": [4000, 11000],
+      "critical_low": 2000,
+      "critical_high": 30000,
+      "source": "WHO haematology reference ranges; ICMR haematology guidelines"
+    },
+    {
+      "test_name": "Platelet Count",
+      "aliases": ["Platelets", "PLT", "Thrombocyte Count"],
+      "unit": "cells/μL",
+      "normal_range_male": [150000, 400000],
+      "normal_range_female": [150000, 400000],
+      "critical_low": 50000,
+      "critical_high": 1000000,
+      "source": "WHO haematology reference ranges; ICMR haematology guidelines"
+    },
+    {
+      "test_name": "SGPT",
+      "aliases": ["ALT", "Alanine Aminotransferase", "Serum Glutamic Pyruvic Transaminase", "SGPT/ALT"],
+      "unit": "U/L",
+      "normal_range_male": [7, 56],
+      "normal_range_female": [7, 45],
+      "critical_low": 0,
+      "critical_high": 1000,
+      "source": "ACG clinical guideline for liver chemistry; ICMR reference ranges"
+    },
+    {
+      "test_name": "SGOT",
+      "aliases": ["AST", "Aspartate Aminotransferase", "Serum Glutamic Oxaloacetic Transaminase", "SGOT/AST"],
+      "unit": "U/L",
+      "normal_range_male": [10, 40],
+      "normal_range_female": [9, 32],
+      "critical_low": 0,
+      "critical_high": 1000,
+      "source": "ACG clinical guideline for liver chemistry; ICMR reference ranges"
+    }
+  ]
+}
