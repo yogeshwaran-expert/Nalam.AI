@@ -1,256 +1,500 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ta" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nalam AI — Read your prescriptions in your language</title>
-  <meta name="description" content="Upload a photo of your handwritten prescription or lab report. Nalam AI reads it, checks it for safety, and explains it to you in Hindi, Tamil, or Tanglish." />
-
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Nanum+Pen+Script&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nalam AI (நலம்) — 3D Accessible Voice Medical Reading Aid</title>
+  <meta name="description" content="Nalam AI reads handwritten prescriptions, lab reports, and medicine strips back to you in Hindi, Tamil, or Tanglish. Built for accessibility and ease of use.">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app">
+  <!-- Accessibility Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <!-- ===== NAV ===== -->
-    <header class="nav">
-      <div class="nav__inner">
-        <a class="nav__brand" href="#top">
-          <span class="nav__mark">ஆ</span>
-          <span class="nav__name">Nalam <em>AI</em></span>
-        </a>
-        <nav class="nav__links">
-          <a href="#how">How it works</a>
-          <a href="#languages">Languages</a>
-          <a href="#safety">Safety</a>
-        </nav>
-        <a class="btn btn--ghost nav__cta" href="#try">Scan a prescription</a>
+  <!-- ==========================================================
+       1. LEFT-SIDE VERTICAL ACTION RAIL (SMALL & ROUND FLOATING BUTTONS)
+       ========================================================== -->
+  <aside class="action-rail" aria-label="Quick Medical Emergency & Directions Rail">
+    <button id="rail-btn-hospital" class="rail-btn-round" type="button" aria-label="Nearby Hospital / மருத்துவமனை">
+      <span aria-hidden="true">🏥</span>
+      <span class="rail-tooltip">Nearby Hospital / மருத்துவமனை</span>
+    </button>
+    
+    <button id="rail-btn-pharmacy" class="rail-btn-round" type="button" aria-label="Near My Medical Shop / மருந்தகம்">
+      <span aria-hidden="true">💊</span>
+      <span class="rail-tooltip">Nearby Medical Shop / மருந்தகம்</span>
+    </button>
+  </aside>
+
+  <!-- ==========================================================
+       HEADER & BRAND LOGO WITH HAMBURGER MENU
+       ========================================================== -->
+  <header class="site-header">
+    <a href="#" class="brand-container" aria-label="Nalam AI Homepage">
+      <div class="brand-logo" aria-hidden="true">ந</div>
+      <div class="brand-text-group">
+        <span class="brand-title">Nalam AI</span>
+        <span class="brand-subtitle" data-i18n="brand_subtitle">நலம் — Wellness for All</span>
       </div>
-    </header>
+    </a>
 
-    <!-- ===== HERO ===== -->
-    <section class="hero" id="top">
-      <div class="hero__copy">
-        <p class="eyebrow">nalam · நலம் · wellness, made legible</p>
-        <h1 class="hero__title">
-          Here you can't read.<br />
-          <span class="ink-underline">Nalam reads it for you.</span>
+    <div class="header-actions">
+      <button id="main-voice-intro-btn" class="audio-guide-btn" type="button" aria-label="Listen to page introduction in Tamil">
+        <span aria-hidden="true">🔊</span>
+        <span data-i18n="listen_btn">Listen / கேட்க</span>
+      </button>
+
+      <!-- HAMBURGER / SANDWICH BUTTON -->
+      <button id="hamburger-menu-btn" class="hamburger-btn" type="button" aria-expanded="false" aria-controls="header-menu-panel" aria-label="Open Theme and Language Menu">
+        <span aria-hidden="true">☰</span>
+      </button>
+
+      <!-- HAMBURGER DROPDOWN PANEL -->
+      <div id="header-menu-panel" class="header-menu-panel" role="region" aria-label="Settings Menu">
+        <!-- Theme Toggle Section -->
+        <div class="menu-group">
+          <span class="menu-group-label">
+            <span aria-hidden="true">🎨</span>
+            <span>Display Theme</span>
+          </span>
+          <button id="theme-toggle-btn" class="theme-toggle-btn" type="button">
+            <span id="theme-toggle-label">🌙 Dark Mode</span>
+            <span style="font-size: 1.2rem;">☀️ / 🌙</span>
+          </button>
+        </div>
+
+        <!-- Whole Body Language Switcher Section -->
+        <div class="menu-group">
+          <span class="menu-group-label">
+            <span aria-hidden="true">🌐</span>
+            <span>Translate Page Language</span>
+          </span>
+          <div class="lang-select-group">
+            <button class="lang-option-btn active" data-lang-code="ta" type="button">
+              <span>தமிழ்</span>
+              <span style="font-size: 0.75rem;">Tamil</span>
+            </button>
+            <button class="lang-option-btn" data-lang-code="en" type="button">
+              <span>English</span>
+              <span style="font-size: 0.75rem;">ENG</span>
+            </button>
+            <button class="lang-option-btn" data-lang-code="hi" type="button">
+              <span>हिंदी</span>
+              <span style="font-size: 0.75rem;">Hindi</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- ==========================================================
+         2. HERO SECTION & 3D SCROLL-LINKED PRESCRIPTION CARD
+         ========================================================== -->
+    <section class="hero-section" aria-label="Hero Section">
+      <div class="hero-content">
+        <div class="icon-badge">
+          <span aria-hidden="true">✨</span>
+          <span data-i18n="icon_badge">Voice-First AI Healthcare Aid</span>
+        </div>
+        <h1 class="hero-headline" data-i18n="hero_headline">
+          Can't read doctor's writing? <span>Listen to it.</span>
         </h1>
-        <p class="hero__sub">
-          Photograph a prescription, lab report, or medicine strip. Nalam AI
-          decodes the scrawl, checks it for anything unusual, and reads it back to you
-          in Hindi, Tamil, or Tanglish.
+        <p class="hero-subhead" data-i18n="hero_subhead">
+          Snap a photo of your prescription or medicine strip. Nalam AI speaks it back clearly in <strong>Tamil (தமிழ்)</strong>, <strong>Hindi (हिंदी)</strong>, or <strong>Tanglish</strong>.
         </p>
-        <div class="hero__actions">
-          <a href="#try" class="btn btn--primary">Upload your prescription</a>
-          <a href="#how" class="btn btn--text">See how it works ↓</a>
+
+        <!-- Illustrated Doctor & Patient Asset -->
+        <div class="hero-doctor-img-container">
+          <img src="hero_doctor_patient.png" alt="Accessible doctor explaining prescription details to a smiling patient" width="440" height="300" loading="eager">
+          <div class="doctor-img-caption">
+            <span aria-hidden="true">👨‍⚕️🤝👵</span>
+            <span data-i18n="doctor_caption">Your trusted digital health reading companion</span>
+          </div>
         </div>
-        <p class="hero__scroll-hint">scroll — watch the ink clear up</p>
       </div>
 
-      <div class="hero-stage" id="heroStage">
-        <div class="hero-card" id="heroCard">
-          <div class="rx-face rx-face--scrawl">
-            <div class="rx-face__letterhead">
-              <span>Dr. R. Subramaniam · MBBS, MD</span>
-              <span>General Physician</span>
+      <!-- 3D SCROLL PERSPECTIVE VIEWPORT -->
+      <div class="hero-visual-3d" id="scroll-3d-trigger">
+        <div class="prescription-card-3d-wrap" id="card-3d-transform">
+          
+          <!-- STATE 1: Illegible Tilted Scrawl Card -->
+          <div class="card-surface card-scrawl" id="card-scrawl-view" aria-hidden="false">
+            <div class="scrawl-header">
+              <span class="scrawl-badge" data-i18n="scrawl_badge">⚠️ Hard to Read Scrawl</span>
+              <span style="font-size: 1.8rem;" aria-hidden="true">📜</span>
             </div>
-            <p class="rx-scrawl-line">Tab. Amoxyclav 625mg</p>
-            <p class="rx-scrawl-line">1-0-1 × 5 days, after food</p>
-            <p class="rx-scrawl-line">Syp. Cough Linctus 10ml TDS</p>
-            <p class="rx-scrawl-line rx-scrawl-line--stamp">Rx</p>
+            <div class="scrawl-lines">
+              <div class="scrawl-scribble" style="width: 90%;"></div>
+              <div class="scrawl-scribble" style="width: 70%;"></div>
+              <div class="scrawl-scribble" style="width: 85%;"></div>
+              <div class="scrawl-scribble" style="width: 60%;"></div>
+            </div>
+            <div class="scrawl-footer-note">
+              <span aria-hidden="true">❓</span>
+              <span data-i18n="scrawl_note">Confusing medical symbols & scrawl</span>
+            </div>
           </div>
-          <div class="rx-face rx-face--clear">
-            <div class="rx-face__tag">Explained in Tamil</div>
-            <p class="rx-clear-line">அமோக்ஸிக்ளாவ் 625mg — காலை, இரவு, 5 நாட்கள், சாப்பிட்ட பின்</p>
-            <p class="rx-clear-line">இருமல் சிரப் — நாளுக்கு 3 முறை, 10ml</p>
-            <p class="rx-clear-badge">✓ Dosage checked · No conflicts found</p>
+
+          <!-- STATE 2: Clear Legible Translated Card -->
+          <div class="card-surface card-translated" id="card-translated-view" aria-hidden="true">
+            <div class="translated-header">
+              <div class="verified-tag">
+                <span aria-hidden="true">✅</span>
+                <span data-i18n="verified_tag">Nalam AI Verified</span>
+              </div>
+              <span style="font-weight: 800; font-size: 0.9rem;">Tamil Audio Ready</span>
+            </div>
+            <div class="translated-content">
+              <div class="medicine-item">
+                <div class="med-info">
+                  <span class="med-name">Paracetamol 500mg</span>
+                  <span class="med-timing">☀️ Morning 1 • 🌙 Night 1 (after food)</span>
+                </div>
+                <button class="play-voice-pill speak-item-btn" data-text="Paracetamol 500mg: Morning 1 tablet, Night 1 tablet after food." type="button" aria-label="Play audio for Paracetamol">🔊</button>
+              </div>
+
+              <div class="medicine-item">
+                <div class="med-info">
+                  <span class="med-name">Amoxicillin 250mg</span>
+                  <span class="med-timing">☀️ Morning 1 • 🌆 Evening 1</span>
+                </div>
+                <button class="play-voice-pill speak-item-btn" data-text="Amoxicillin 250mg: Morning 1 capsule, Evening 1 capsule." type="button" aria-label="Play audio for Amoxicillin">🔊</button>
+              </div>
+
+              <div class="medicine-item">
+                <div class="med-info">
+                  <span class="med-name">Cetirizine 10mg</span>
+                  <span class="med-timing">🌙 Night 1 tablet before sleep</span>
+                </div>
+                <button class="play-voice-pill speak-item-btn" data-text="Cetirizine 10mg: 1 tablet at night before sleep." type="button" aria-label="Play audio for Cetirizine">🔊</button>
+              </div>
+            </div>
           </div>
+
+        </div>
+
+        <div class="scroll-prompt-indicator" aria-hidden="true">
+          <span data-i18n="scroll_prompt">👇 Scroll down to translate scrawl</span>
         </div>
       </div>
     </section>
 
-    <!-- ===== CONTEXT ===== -->
-    <section class="context">
-      <div class="context__inner">
-        <p class="context__lead">
-          A prescription is only useful if someone can read it. Between rushed
-          handwriting, medical shorthand, and a language you didn't grow up reading,
-          it's easy to end up guessing — with medicine.
-        </p>
-        <p class="context__sub">Nalam AI removes the guessing.</p>
+    <!-- ==========================================================
+         3. ICON-FIRST 3-STEP "HOW IT WORKS"
+         ========================================================== -->
+    <section class="section-wrapper" aria-label="How Nalam AI Works">
+      <div class="section-title-group">
+        <span class="section-tag" data-i18n="how_tag">Super Simple • No Reading Required</span>
+        <h2 class="section-headline" data-i18n="how_title">How Nalam AI Works in 3 Steps</h2>
       </div>
-    </section>
 
-    <!-- ===== HOW IT WORKS ===== -->
-    <section class="how" id="how">
-      <p class="section-eyebrow">how it works</p>
-      <h2 class="section-title">Three steps, one clear answer</h2>
-
-      <div class="steps">
-        <article class="step" style="--depth: 0">
-          <span class="step__num">01</span>
-          <h3>Photograph it</h3>
-          <p>Point your phone at any prescription, lab report, or medicine strip. No special scanner needed.</p>
+      <div class="steps-grid">
+        <!-- Step 1 -->
+        <article class="step-card">
+          <div class="step-badge">1</div>
+          <div class="step-icon-large" aria-hidden="true">📸</div>
+          <h3 class="step-title" data-i18n="step1_title">Take a Photo</h3>
+          <p class="step-desc" data-i18n="step1_desc">Point your phone camera at your handwritten paper or medicine strip.</p>
         </article>
-        <article class="step" style="--depth: 1">
-          <span class="step__num">02</span>
-          <h3>AI reads and checks it</h3>
-          <p>Nalam decodes the handwriting, cross-checks the dosage, and flags anything that looks unusual.</p>
+
+        <!-- Step 2 -->
+        <article class="step-card">
+          <div class="step-badge">2</div>
+          <div class="step-icon-large" aria-hidden="true">🔍</div>
+          <h3 class="step-title" data-i18n="step2_title">AI Reads & Checks</h3>
+          <p class="step-desc" data-i18n="step2_desc">Our intelligent vision engine deciphers doctor scrawl & verifies safe dosage.</p>
         </article>
-        <article class="step" style="--depth: 2">
-          <span class="step__num">03</span>
-          <h3>Hear it, in your language</h3>
-          <p>Read or listen to a plain-language explanation in Hindi, Tamil, or Tanglish.</p>
+
+        <!-- Step 3 -->
+        <article class="step-card">
+          <div class="step-badge">3</div>
+          <div class="step-icon-large" aria-hidden="true">🔊</div>
+          <h3 class="step-title" data-i18n="step3_title">Listen in Your Language</h3>
+          <p class="step-desc" data-i18n="step3_desc">Hear exact timing & instructions read out loud in Tamil, Hindi, or Tanglish.</p>
+          <div class="voice-wave-anim" aria-hidden="true">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
         </article>
       </div>
     </section>
 
-    <!-- ===== LANGUAGES ===== -->
-    <section class="languages" id="languages">
-      <p class="section-eyebrow">choose how you read</p>
-      <h2 class="section-title">Explained the way you actually speak</h2>
-      <p class="section-sub">Tap a card to see it flip.</p>
+    <!-- ==========================================================
+         4. 3D LANGUAGE FLIP CARDS (TAMIL / HINDI / TANGLISH)
+         ========================================================== -->
+    <section class="section-wrapper" aria-label="Supported Languages">
+      <div class="section-title-group">
+        <span class="section-tag" data-i18n="lang_tag">Languages • மொழிகள் • भाषाएं</span>
+        <h2 class="section-headline" data-i18n="lang_title">Tap to Hear Spoken Preview</h2>
+      </div>
 
-      <div class="lang-grid">
-        <button class="lang-card" data-lang="hindi">
-          <div class="lang-card__inner">
-            <div class="lang-card__face lang-card__face--front">
-              <span class="lang-card__script">हिंदी</span>
-              <span class="lang-card__name">Hindi</span>
+      <div class="languages-grid">
+        <!-- Card 1: Tamil -->
+        <div class="flip-card" tabindex="0" role="region" aria-label="Tamil Language Voice Preview Card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="lang-flag-badge" aria-hidden="true">🇮🇳</div>
+              <div>
+                <h3 class="lang-title-native">தமிழ்</h3>
+                <p class="lang-subtitle">Tamil Voice</p>
+              </div>
+              <div class="tap-flip-hint">
+                <span aria-hidden="true">🔄</span>
+                <span>Hover / Tap to Flip</span>
+              </div>
             </div>
-            <div class="lang-card__face lang-card__face--back">
-              <p class="lang-card__sample">"दिन में दो बार, खाने के बाद लें"</p>
-              <span class="lang-card__meta">Twice a day, after food</span>
+            <div class="flip-card-back">
+              <div class="sample-audio-box">
+                <div class="sample-label">Tamil Sample</div>
+                <div class="sample-text">"காலை 1 மாத்திரை சாப்பிட்ட பின், இரவு 1 மாத்திரை தூங்குவதற்கு முன்."</div>
+              </div>
+              <button class="play-lang-speech-btn" data-lang="ta-IN" data-speech="காலை 1 மாத்திரை சாப்பிட்ட பின், இரவு 1 மாத்திரை தூங்குவதற்கு முன்." type="button">
+                <span aria-hidden="true">🔊</span>
+                <span>Play Tamil Audio</span>
+              </button>
             </div>
           </div>
-        </button>
+        </div>
 
-        <button class="lang-card" data-lang="tamil">
-          <div class="lang-card__inner">
-            <div class="lang-card__face lang-card__face--front">
-              <span class="lang-card__script">தமிழ்</span>
-              <span class="lang-card__name">Tamil</span>
+        <!-- Card 2: Hindi -->
+        <div class="flip-card" tabindex="0" role="region" aria-label="Hindi Language Voice Preview Card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="lang-flag-badge" aria-hidden="true">🇮🇳</div>
+              <div>
+                <h3 class="lang-title-native">हिंदी</h3>
+                <p class="lang-subtitle">Hindi Voice</p>
+              </div>
+              <div class="tap-flip-hint">
+                <span aria-hidden="true">🔄</span>
+                <span>Hover / Tap to Flip</span>
+              </div>
             </div>
-            <div class="lang-card__face lang-card__face--back">
-              <p class="lang-card__sample">"காலை, இரவு — சாப்பிட்ட பிறகு"</p>
-              <span class="lang-card__meta">Morning, night — after food</span>
+            <div class="flip-card-back">
+              <div class="sample-audio-box">
+                <div class="sample-label">Hindi Sample</div>
+                <div class="sample-text">"सुबह 1 गोली खाने के बाद, और रात को 1 गोली सोने से पहले।"</div>
+              </div>
+              <button class="play-lang-speech-btn" data-lang="hi-IN" data-speech="सुबह 1 गोली खाने के बाद, और रात को 1 गोली सोने से पहले।" type="button">
+                <span aria-hidden="true">🔊</span>
+                <span>Play Hindi Audio</span>
+              </button>
             </div>
           </div>
-        </button>
+        </div>
 
-        <button class="lang-card" data-lang="tanglish">
-          <div class="lang-card__inner">
-            <div class="lang-card__face lang-card__face--front">
-              <span class="lang-card__script">Tanglish</span>
-              <span class="lang-card__name">Naturally mixed</span>
+        <!-- Card 3: Tanglish -->
+        <div class="flip-card" tabindex="0" role="region" aria-label="Tanglish Voice Preview Card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="lang-flag-badge" aria-hidden="true">🗣️</div>
+              <div>
+                <h3 class="lang-title-native">Tanglish</h3>
+                <p class="lang-subtitle">Tamil + English Blend</p>
+              </div>
+              <div class="tap-flip-hint">
+                <span aria-hidden="true">🔄</span>
+                <span>Hover / Tap to Flip</span>
+              </div>
             </div>
-            <div class="lang-card__face lang-card__face--back">
-              <p class="lang-card__sample">"Rendu vaati saapten piragu eduthukonga"</p>
-              <span class="lang-card__meta">Take it twice, after eating</span>
+            <div class="flip-card-back">
+              <div class="sample-audio-box">
+                <div class="sample-label">Tanglish Sample</div>
+                <div class="sample-text">"Morning 1 tablet after food edunganga, Night 1 tablet before sleep."</div>
+              </div>
+              <button class="play-lang-speech-btn" data-lang="en-IN" data-speech="Morning 1 tablet after food edunganga, Night 1 tablet before sleep." type="button">
+                <span aria-hidden="true">🔊</span>
+                <span>Play Tanglish Audio</span>
+              </button>
             </div>
           </div>
-        </button>
+        </div>
       </div>
     </section>
 
-    <!-- ===== SAFETY ===== -->
-    <section class="safety" id="safety">
-      <div class="safety__copy">
-        <p class="section-eyebrow">before anything reaches you</p>
-        <h2 class="section-title">Every reading gets checked first</h2>
-        <p class="section-sub">
-          Nalam cross-references dosage and known interactions before it explains
-          anything back to you — and it always tells you when something needs a second
-          opinion.
-        </p>
-        <ul class="safety__list">
-          <li><strong>Dosage check</strong> — flags amounts outside the typical range.</li>
-          <li><strong>Interaction flags</strong> — warns if two medicines don't mix well.</li>
-          <li><strong>Handwriting confidence</strong> — tells you when it isn't sure, instead of guessing.</li>
-        </ul>
-      </div>
-      <div class="safety__seal-stage">
-        <div class="safety__seal">
-          <span class="safety__seal-text">VERIFIED<br />READING</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== TRY IT ===== -->
-    <section class="try" id="try">
-      <p class="section-eyebrow">get started</p>
-      <h2 class="section-title">Upload your prescription</h2>
-      <p class="section-sub">A photo of a prescription, lab report, or medicine strip — JPG, PNG, or WebP.</p>
-
-      <div class="try-panel">
-
-        <!-- Mode toggle -->
-        <div class="mode-toggle">
-          <span class="mode-toggle__label is-active" id="mockLabel">Mock</span>
-          <div class="mode-toggle__switch" id="modeSwitch" role="switch" aria-checked="false" aria-label="Toggle between mock and live mode" tabindex="0"></div>
-          <span class="mode-toggle__label" id="liveLabel">Live</span>
-        </div>
-
-        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a prescription image">
-          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
-          <div class="dropzone__content" id="dropzoneEmpty">
-            <span class="dropzone__icon">📄</span>
-            <p class="dropzone__title">Drop your prescription here</p>
-            <p class="dropzone__sub">or click to browse · JPG, PNG, WebP up to 10MB</p>
+    <!-- ==========================================================
+         5. SAFETY & TRUST SECTION WITH TILTING 3D SEAL
+         ========================================================== -->
+    <section class="section-wrapper" aria-label="Safety & Verification">
+      <div class="safety-box">
+        <div class="seal-container-3d">
+          <div class="safety-seal" id="interactive-safety-seal" tabindex="0" aria-label="Nalam Verified Reading 3D Safety Badge">
+            <div class="seal-icon" aria-hidden="true">🛡️</div>
+            <div class="seal-text">Nalam AI</div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--color-warm-cream);" data-i18n="safety_seal_text">VERIFIED READ</div>
           </div>
-          <div class="dropzone__preview" id="dropzonePreview" hidden>
-            <img id="previewImg" alt="Uploaded prescription preview" hidden />
-            <div class="dropzone__file-chip" id="previewFileChip" hidden>
-              <span>📎</span>
-              <span id="previewFileName"></span>
+        </div>
+
+        <div class="safety-points">
+          <div class="safety-item">
+            <div class="safety-item-icon" aria-hidden="true">💊</div>
+            <div class="safety-item-text">
+              <span class="safety-item-title" data-i18n="safety_doses_title">Automatic Dosage Cross-Check</span>
+              <span class="safety-item-desc" data-i18n="safety_doses_desc">Warns if a dosage appears unusually high or conflicts with standard limits.</span>
             </div>
-            <button class="dropzone__clear" id="clearUpload" type="button" aria-label="Remove file">Remove ✕</button>
+          </div>
+
+          <div class="safety-item alert-item">
+            <div class="safety-item-icon" aria-hidden="true">⚠️</div>
+            <div class="safety-item-text">
+              <span class="safety-item-title" data-i18n="safety_alert_title">Drug Interaction Alert</span>
+              <span class="safety-item-desc" data-i18n="safety_alert_desc">Highlights potential risks when multiple medicines are prescribed together.</span>
+            </div>
+          </div>
+
+          <div class="safety-item">
+            <div class="safety-item-icon" aria-hidden="true">🎯</div>
+            <div class="safety-item-text">
+              <span class="safety-item-title" data-i18n="safety_confidence_title">98.4% Handwriting Confidence</span>
+              <span class="safety-item-desc" data-i18n="safety_confidence_desc">Flags blurry or ambiguous scrawl so you can double-check with your chemist.</span>
+            </div>
           </div>
         </div>
-
-        <div class="try-panel__lang-select" role="tablist" aria-label="Choose a language">
-          <button class="try-panel__lang-btn is-active" data-demo-lang="hindi">Hindi</button>
-          <button class="try-panel__lang-btn" data-demo-lang="tamil">Tamil</button>
-          <button class="try-panel__lang-btn" data-demo-lang="tanglish">Tanglish</button>
-        </div>
-
-        <button class="try-panel__demo-btn" id="demoBtn" disabled>
-          <span id="demoBtnLabel">Upload a file to continue</span>
-        </button>
-
-        <div class="try-panel__result" id="demoResult" aria-live="polite">
-          <p class="try-panel__placeholder">Your explanation will appear here.</p>
-        </div>
-
-        <p class="try-panel__note">
-          In <strong>mock mode</strong>, results use sample data — no network required.
-          Switch to <strong>live mode</strong> to hit the ArogyaSight API backend at localhost:8000.
-        </p>
       </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
-    <footer class="footer">
-      <div class="footer__inner">
-        <div class="footer__brand">
-          <span class="nav__mark">ந</span>
-          <span class="nav__name">Nalam <em>AI</em></span>
+    <!-- ==========================================================
+         6. REAL DRAG-AND-DROP PRESCRIPTION UPLOADER
+         ========================================================== -->
+    <section class="section-wrapper" aria-label="Upload Prescription Demo">
+      <div class="upload-section-card">
+        <div class="upload-header">
+          <h2 class="upload-title" data-i18n="upload_title">Try Uploading Your Prescription</h2>
+          <p class="upload-subtitle" data-i18n="upload_subtitle">Drag and drop an image or PDF to test the reader</p>
+          <div class="demo-disclosure-badge">
+            <span aria-hidden="true">ℹ️</span>
+            <span data-i18n="demo_badge">Client-side Interactive Demo • Max 10MB</span>
+          </div>
         </div>
-        <p class="footer__disclaimer">
-          Nalam AI is a reading aid, not a medical diagnosis. Always confirm doses
-          and instructions with your doctor or pharmacist.
-        </p>
-      </div>
-    </footer>
 
+        <!-- DROP ZONE -->
+        <div class="drop-zone" id="prescription-drop-zone" tabindex="0" role="button" aria-label="Upload prescription file area. Drag and drop or click to browse.">
+          <input type="file" id="prescription-file-input" accept="image/*,application/pdf" style="display: none;" aria-hidden="true">
+          <div class="drop-icon" aria-hidden="true">📄 ➡️ 🔊</div>
+          <div class="drop-prompt" data-i18n="drop_prompt">Drop your prescription file here</div>
+          <div class="drop-hint" data-i18n="drop_hint">Supports JPG, PNG, WEBP, PDF (Max 10MB)</div>
+          <button class="btn-browse" type="button">
+            <span aria-hidden="true">📁</span>
+            <span data-i18n="browse_btn">Choose File</span>
+          </button>
+        </div>
+
+        <!-- UPLOAD PREVIEW & LIVE SCAN CONTAINER -->
+        <div class="upload-preview-container" id="upload-preview-container">
+          <div class="preview-grid">
+            <div class="preview-media-box">
+              <img id="preview-image-element" src="" alt="Uploaded prescription preview">
+              <div class="ocr-bounding-box" style="top: 20%; left: 10%; width: 75%; height: 25%;"></div>
+              <div class="ocr-bounding-box" style="top: 55%; left: 10%; width: 75%; height: 25%;"></div>
+            </div>
+
+            <div class="simulated-results-box">
+              <div class="result-heading">
+                <span aria-hidden="true">✅</span>
+                <span>AI Scanned Output</span>
+              </div>
+              <div class="scan-progress-bar">
+                <div class="scan-progress-fill" id="scan-progress-fill"></div>
+              </div>
+
+              <div class="audio-output-pill" style="margin-top: var(--space-2);">
+                <div>
+                  <strong style="color: var(--color-deep-teal); font-size: 1.1rem;">Deciphered Dosage Audio</strong>
+                  <p style="font-size: 0.9rem; color: var(--text-muted);" id="demo-scanned-text">Paracetamol 500mg - 1 tablet morning, 1 night after meals.</p>
+                </div>
+                <button id="play-demo-scanned-btn" class="play-voice-pill" type="button" aria-label="Play deciphered prescription audio">🔊</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================
+       7. FOOTER & MANDATORY DISCLAIMER
+       ========================================================== -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="brand-container" style="justify-content: center;">
+        <div class="brand-logo" aria-hidden="true">ந</div>
+        <span class="brand-title" style="font-size: 1.5rem;">Nalam AI</span>
+      </div>
+
+      <div class="footer-disclaimer-box">
+        <span aria-hidden="true">⚖️ </span>
+        <span data-i18n="disclaimer_text"><strong>Medical Disclaimer:</strong> Nalam AI is an assistive reading aid and accessibility tool, not a professional medical diagnosis. Always confirm medicines, dosages, and administration instructions directly with your doctor or qualified pharmacist.</span>
+      </div>
+
+      <p style="font-size: 0.9rem; opacity: 0.8;">
+        © 2026 Nalam AI (நலம்). Designed for low-literacy & accessible healthcare.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ==========================================================
+       POP-UP MODAL OVERLAYS (PLACED AT BODY END)
+       ========================================================== -->
+  <!-- POP-UP MODAL 1: NEARBY HOSPITAL -->
+  <div id="hospital-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="hospital-modal-title">
+    <div class="modal-card">
+      <button class="modal-close-btn" data-close-modal="hospital-modal" type="button" aria-label="Close modal">✕</button>
+      <div class="modal-header">
+        <div class="modal-header-icon" aria-hidden="true">🏥</div>
+        <div>
+          <h2 id="hospital-modal-title" class="modal-title">Nearby Hospital</h2>
+          <span class="modal-subtitle">அருகிலுள்ள மருத்துவமனை</span>
+        </div>
+      </div>
+      <div class="modal-body">
+        Find emergency care centers and general hospitals closest to your current location using live GPS mapping.
+      </div>
+      <div class="modal-actions">
+        <button id="launch-hospital-map-btn" class="modal-primary-btn" type="button">
+          <span aria-hidden="true">📍</span>
+          <span>Open Hospitals on Google Maps</span>
+        </button>
+        <button class="modal-secondary-btn speak-item-btn" data-text="Find nearby emergency hospitals." type="button">
+          <span aria-hidden="true">🔊</span>
+          <span>Listen in Tamil / கேட்க</span>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <!-- POP-UP MODAL 2: NEAR MY MEDICAL SHOP -->
+  <div id="pharmacy-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pharmacy-modal-title">
+    <div class="modal-card">
+      <button class="modal-close-btn" data-close-modal="pharmacy-modal" type="button" aria-label="Close modal">✕</button>
+      <div class="modal-header">
+        <div class="modal-header-icon" style="background-color: var(--color-deep-teal); color: var(--color-mustard);" aria-hidden="true">💊</div>
+        <div>
+          <h2 id="pharmacy-modal-title" class="modal-title">Near My Medical Shop</h2>
+          <span class="modal-subtitle">அருகிலுள்ள மருந்தகம்</span>
+        </div>
+      </div>
+      <div class="modal-body">
+        Locate licensed pharmacies and chemists nearby to buy your prescribed medicines or confirm dosage instructions.
+      </div>
+      <div class="modal-actions">
+        <button id="launch-pharmacy-map-btn" class="modal-primary-btn" style="background-color: var(--color-deep-teal);" type="button">
+          <span aria-hidden="true">📍</span>
+          <span>Open Pharmacies on Google Maps</span>
+        </button>
+        <button class="modal-secondary-btn speak-item-btn" data-text="Locate nearby medical shops and pharmacies." type="button">
+          <span aria-hidden="true">🔊</span>
+          <span>Listen in Tamil / கேட்க</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

@@ -1,560 +1,585 @@
-// ArogyaSight AI — interaction layer
-// Handles: scroll-linked 3D hero card, language flip cards, and the
-// extraction panel wired to the real backend (or mock data).
+/**
+ * Nalam AI (நலம்) — 3D Interactive & Accessible Voice Engine
+ */
 
-import { extractDocument, setApiConfig, getApiConfig, ApiError } from "./api/client.js";
-import { generateVoiceExplanation, playBrowserSpeech, stopBrowserSpeech } from "./voice/ttsService.js";
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if reduced motion is requested
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const prefersReducedMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)"
-).matches;
+  initHamburgerAndTheme();
+  initWholeBodyLanguageTranslation();
+  initActionRail();
+  initHeroScroll3D(prefersReducedMotion);
+  initSpeechSynthesis();
+  initLanguageFlipCards();
+  initSafetySealTilt(prefersReducedMotion);
+  initFileUploadDemo();
+});
 
-/* =========================================================
-   1. Hero 3D scroll card
-   As the hero section scrolls through the viewport, the card
-   rotates from a tilted, illegible "scrawl" face to a flat,
-   legible "clear" face — mirroring the product's actual job.
-   ========================================================= */
-function initHeroScroll() {
-  const stage = document.getElementById("heroStage");
-  const card = document.getElementById("heroCard");
-  if (!stage || !card) return;
+/* ==========================================================
+   HAMBURGER SANDWICH MENU & THEME SWITCHER
+   ========================================================== */
+function initHamburgerAndTheme() {
+  const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+  const menuPanel = document.getElementById('header-menu-panel');
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const themeToggleLabel = document.getElementById('theme-toggle-label');
 
-  const scrawlFace = card.querySelector(".rx-face--scrawl");
-  const clearFace = card.querySelector(".rx-face--clear");
+  // Hamburger Toggle
+  if (hamburgerBtn && menuPanel) {
+    hamburgerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menuPanel.classList.toggle('open');
+      hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
 
-  if (prefersReducedMotion) {
-    card.style.transform = "rotateX(0deg) scale(1)";
-    clearFace.style.opacity = "1";
-    scrawlFace.style.opacity = "0";
-    return;
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!menuPanel.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+        menuPanel.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(max, v));
+  // Theme Switcher Toggle
+  if (themeToggleBtn && themeToggleLabel) {
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      themeToggleLabel.textContent = newTheme === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode';
+    });
+  }
+}
+
+/* ==========================================================
+   WHOLE BODY LANGUAGE TRANSLATION DICTIONARY & ENGINE
+   ========================================================== */
+const translations = {
+  ta: {
+    brand_subtitle: "நலம் — அனைவருக்கும் நலம்",
+    listen_btn: "கேட்க / Listen",
+    icon_badge: "குரல் வழி AI சுகாதார உதவி",
+    hero_headline: "மருத்துவரின் கையெழுத்தைப் படிக்க முடியவில்லையா? <span>கேளுங்கள்.</span>",
+    hero_subhead: "உங்கள் மருந்துச் சீட்டைப் படம் பிடியுங்கள். நலம் AI அதைத் தமிழ், ஹிந்தி அல்லது தங்க்லீஷில் படித்துக் காட்டும்.",
+    doctor_caption: "உங்கள் நம்பிக்கையான டிஜிட்டல் சுகாதாரத் தோழன்",
+    scrawl_badge: "⚠️ படிக்கக் கடினமான கையெழுத்து",
+    scrawl_note: "❓ குழப்பமான மருத்துவக் குறியீடுகள்",
+    verified_tag: "✅ நலம் AI சரிபார்க்கப்பட்டது",
+    scroll_prompt: "👇 கையெழுத்தை மாற்ற கீழே உருட்டவும்",
+    how_tag: "மிகவும் எளிமையானது • வாசிக்கத் தேவையில்லை",
+    how_title: "நலம் AI செயல்படும் 3 படிகள்",
+    step1_title: "படம் பிடியுங்கள்",
+    step1_desc: "உங்கள் தொலைபேசி கேமராவை மருந்துச் சீட்டை நோக்கிப் பிடியுங்கள்.",
+    step2_title: "AI படித்துச் சரிபார்க்கும்",
+    step2_desc: "எங்கள் AI மருத்துவர் கையெழுத்தைப் படித்துச் சரியான அளவைச் சரிபார்க்கும்.",
+    step3_title: "உங்கள் மொழியில் கேளுங்கள்",
+    step3_desc: "துல்லியமான நேரம் மற்றும் வழிமுறைகளை உரக்கக் கேட்டுத் தெரிந்துகொள்ளுங்கள்.",
+    lang_tag: "Languages • மொழிகள் • भाषाएं",
+    lang_title: "குரல் மாதிரி கேட்க தட்டவும்",
+    safety_seal_text: "சரிபார்க்கப்பட்ட வாசிப்பு",
+    safety_doses_title: "தானியங்கி அளவு சரிபார்ப்பு",
+    safety_doses_desc: "மருந்து அளவு அதிகமாக இருந்தால் எச்சரிக்கும்.",
+    safety_alert_title: "மருந்து வினைகள் எச்சரிக்கை",
+    safety_alert_desc: "ஒன்றுக்கும் மேற்பட்ட மருந்துகள் இருக்கும்போது ஆபத்துக்களைச் சுட்டிக்காட்டும்.",
+    safety_confidence_title: "98.4% கையெழுத்துத் துல்லியம்",
+    safety_confidence_desc: "தெளிவில்லாத எழுத்துக்களை அடையாளம் காட்டும்.",
+    upload_title: "உங்கள் மருந்துச் சீட்டை பதிவேற்றிப் பாருங்கள்",
+    upload_subtitle: "படம் அல்லது PDF-ஐ இழுத்து வந்து போடுங்கள்",
+    demo_badge: "சாதனத்தின் உள்ளேயே இயங்கும் செயல்முறை • அதிகபட்சம் 10MB",
+    drop_prompt: "இங்கே கோப்பை போடுங்கள்",
+    drop_hint: "JPG, PNG, WEBP, PDF ஆதரவு (10MB வரை)",
+    browse_btn: "கோப்பைத் தேர்ந்தெடுங்கள்",
+    disclaimer_text: "<strong>மருத்துவப் பொறுப்புத் துறப்பு:</strong> நலம் AI ஒரு வாசிப்பு உதவி மட்டுமே, மருத்துவக் கண்டறிதல் அல்ல. மருந்துகள் மற்றும் அளவுகளை உங்கள் மருத்துவரிடம் சரிபார்க்கவும்."
+  },
+  en: {
+    brand_subtitle: "Nalam — Wellness for All",
+    listen_btn: "Listen / கேட்க",
+    icon_badge: "Voice-First AI Healthcare Aid",
+    hero_headline: "Can't read doctor's writing? <span>Listen to it.</span>",
+    hero_subhead: "Snap a photo of your prescription or medicine strip. Nalam AI speaks it back clearly in Tamil, Hindi, or Tanglish.",
+    doctor_caption: "Your trusted digital health reading companion",
+    scrawl_badge: "⚠️ Hard to Read Scrawl",
+    scrawl_note: "❓ Confusing medical symbols & scrawl",
+    verified_tag: "✅ Nalam AI Verified",
+    scroll_prompt: "👇 Scroll down to translate scrawl",
+    how_tag: "Super Simple • No Reading Required",
+    how_title: "How Nalam AI Works in 3 Steps",
+    step1_title: "Take a Photo",
+    step1_desc: "Point your phone camera at your handwritten paper or medicine strip.",
+    step2_title: "AI Reads & Checks",
+    step2_desc: "Our intelligent vision engine deciphers doctor scrawl & verifies safe dosage.",
+    step3_title: "Listen in Your Language",
+    step3_desc: "Hear exact timing & instructions read out loud in Tamil, Hindi, or Tanglish.",
+    lang_tag: "Languages • மொழிகள் • भाषाएं",
+    lang_title: "Tap to Hear Spoken Preview",
+    safety_seal_text: "VERIFIED READ",
+    safety_doses_title: "Automatic Dosage Cross-Check",
+    safety_doses_desc: "Warns if a dosage appears unusually high or conflicts with standard limits.",
+    safety_alert_title: "Drug Interaction Alert",
+    safety_alert_desc: "Highlights potential risks when multiple medicines are prescribed together.",
+    safety_confidence_title: "98.4% Handwriting Confidence",
+    safety_confidence_desc: "Flags blurry or ambiguous scrawl so you can double-check with your chemist.",
+    upload_title: "Try Uploading Your Prescription",
+    upload_subtitle: "Drag and drop an image or PDF to test the reader",
+    demo_badge: "Client-side Interactive Demo • Max 10MB",
+    drop_prompt: "Drop your prescription file here",
+    drop_hint: "Supports JPG, PNG, WEBP, PDF (Max 10MB)",
+    browse_btn: "Choose File",
+    disclaimer_text: "<strong>Medical Disclaimer:</strong> Nalam AI is an assistive reading aid and accessibility tool, not a professional medical diagnosis. Always confirm medicines, dosages, and administration instructions directly with your doctor or qualified pharmacist."
+  },
+  hi: {
+    brand_subtitle: "नलम — सभी के लिए कल्याण",
+    listen_btn: "सुनें / Listen",
+    icon_badge: "आवाज-प्रथम एआई स्वास्थ्य सहायता",
+    hero_headline: "डॉक्टर की लिखावट नहीं पढ़ सकते? <span>इसे सुनें।</span>",
+    hero_subhead: "अपने नुस्खे या दवा की पट्टी की फोटो लें। नलम AI इसे हिंदी, तमिल या तंग्लिश में स्पष्ट रूप से सुनाता है।",
+    doctor_caption: "आपका भरोसेमंद डिजिटल स्वास्थ्य साथी",
+    scrawl_badge: "⚠️ पढ़ने में कठिन लिखावट",
+    scrawl_note: "❓ उलझन भरे मेडिकल प्रतीक",
+    verified_tag: "✅ नलम AI सत्यापित",
+    scroll_prompt: "👇 लिखावट अनुवाद करने के लिए नीचे स्क्रॉल करें",
+    how_tag: "अत्यंत सरल • पढ़ने की आवश्यकता नहीं",
+    how_title: "नलम AI 3 चरणों में कैसे काम करता है",
+    step1_title: "फोटो लें",
+    step1_desc: "अपने फोन के कैमरे को अपने लिखे हुए कागज या दवा की पट्टी पर रखें।",
+    step2_title: "एआई पढ़ता और जांचता है",
+    step2_desc: "हमारा इंटेलिजेंट विजन इंजन लिखावट को पढ़ता है और सुरक्षित खुराक की जांच करता है।",
+    step3_title: "अपनी भाषा में सुनें",
+    step3_desc: "तमिल, हिंदी या तंग्लिश में सही समय और निर्देश जोर से सुनें।",
+    lang_tag: "Languages • மொழிகள் • भाषाएं",
+    lang_title: "बोलने का पूर्वावलोकन सुनने के लिए टैप करें",
+    safety_seal_text: "सत्यापित पठन",
+    safety_doses_title: "स्वचालित खुराक जांच",
+    safety_doses_desc: "यदि खुराक असामान्य रूप से अधिक लगती है तो चेतावनी देता है।",
+    safety_alert_title: "दवा पारस्परिक क्रिया चेतावनी",
+    safety_alert_desc: "एक साथ कई दवाएं लिखे जाने पर संभावित जोखिमों को उजागर करता है।",
+    safety_confidence_title: "98.4% लिखावट सटीकता",
+    safety_confidence_desc: "धुंधली लिखावट को फ्लैग करता है ताकि आप फार्मासिस्ट से दोबारा जांच सकें।",
+    upload_title: "अपना नुस्खा अपलोड करके देखें",
+    upload_subtitle: "रीडर का परीक्षण करने के लिए एक छवि या पीडीएफ खींचें और छोड़ें",
+    demo_badge: "क्लाइंट-साइड इंटरैक्टिव डेमो • अधिकतम 10MB",
+    drop_prompt: "अपनी नुस्खा फ़ाइल यहाँ छोड़ें",
+    drop_hint: "JPG, PNG, WEBP, PDF का समर्थन करता है (अधिकतम 10MB)",
+    browse_btn: "फ़ाइल चुनें",
+    disclaimer_text: "<strong>चिकित्सा अस्वीकरण:</strong> नलम AI एक सहायक पठन सहायता है, पेशेवर चिकित्सा निदान नहीं। हमेशा अपने डॉक्टर या योग्य फार्मासिस्ट से दवाओं और खुराक की पुष्टि करें।"
+  }
+};
+
+function initWholeBodyLanguageTranslation() {
+  const langBtns = document.querySelectorAll('.lang-option-btn');
+
+  langBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const langCode = btn.getAttribute('data-lang-code');
+      if (!langCode || !translations[langCode]) return;
+
+      // Update active state in UI
+      langBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Perform Whole-Body DOM Translation
+      translateWholePage(langCode);
+    });
+  });
+}
+
+function translateWholePage(langCode) {
+  const langDict = translations[langCode];
+  if (!langDict) return;
+
+  const elements = document.querySelectorAll('[data-i18n]');
+  elements.forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (langDict[key]) {
+      el.innerHTML = langDict[key];
+    }
+  });
+}
+
+/* ==========================================================
+   1. LEFT ACTION RAIL & POP-UP MODALS INTEGRATION
+   ========================================================== */
+function initActionRail() {
+  const hospitalBtn = document.getElementById('rail-btn-hospital');
+  const pharmacyBtn = document.getElementById('rail-btn-pharmacy');
+  const hospitalModal = document.getElementById('hospital-modal');
+  const pharmacyModal = document.getElementById('pharmacy-modal');
+  const launchHospitalBtn = document.getElementById('launch-hospital-map-btn');
+  const launchPharmacyBtn = document.getElementById('launch-pharmacy-map-btn');
+  const closeBtns = document.querySelectorAll('[data-close-modal]');
+
+  // Open Modals on Button Click
+  if (hospitalBtn && hospitalModal) {
+    hospitalBtn.addEventListener('click', () => {
+      openModal(hospitalModal);
+    });
   }
 
-  function update() {
-    const rect = stage.getBoundingClientRect();
-    const vh = window.innerHeight;
+  if (pharmacyBtn && pharmacyModal) {
+    pharmacyBtn.addEventListener('click', () => {
+      openModal(pharmacyModal);
+    });
+  }
 
-    // progress: 0 when stage top is at bottom of viewport,
-    // 1 when stage top has scrolled to the top of viewport.
-    const raw = (vh - rect.top) / (vh + rect.height);
-    const progress = clamp(raw, 0, 1);
+  // Launch Maps from inside Modals
+  if (launchHospitalBtn) {
+    launchHospitalBtn.addEventListener('click', () => {
+      openMapsQuery('hospitals near me');
+      closeAllModals();
+    });
+  }
 
-    const rotate = 24 - progress * 24; // 24deg -> 0deg
-    const scale = 0.92 + progress * 0.08; // 0.92 -> 1
-    const translate = progress * -40; // slight lift
+  if (launchPharmacyBtn) {
+    launchPharmacyBtn.addEventListener('click', () => {
+      openMapsQuery('pharmacies near me');
+      closeAllModals();
+    });
+  }
 
-    card.style.transform = `translateY(${translate}px) rotateX(${rotate}deg) scale(${scale})`;
+  // Close Modals on X Click
+  closeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      closeAllModals();
+    });
+  });
 
-    // crossfade starts once the card is mostly flat
-    const fade = clamp((progress - 0.35) / 0.5, 0, 1);
-    clearFace.style.opacity = String(fade);
-    scrawlFace.style.opacity = String(1 - fade * 0.9);
+  // Close Modals on Backdrop Click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        closeAllModals();
+      }
+    });
+  });
+
+  // Close Modals on Escape Key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllModals();
+    }
+  });
+}
+
+function openModal(modal) {
+  if (!modal) return;
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden'; // Lock scroll while modal is open
+}
+
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.classList.remove('active');
+  });
+  document.body.style.overflow = '';
+}
+
+function openMapsQuery(query) {
+  if ('geolocation' in navigator) {
+    // Request location access
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${lat},${lng},14z`;
+        window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+      },
+      (error) => {
+        // Fallback without coordinates if permission denied or error
+        console.warn('Geolocation fallback:', error.message);
+        const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(query)}`;
+        window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+      },
+      { timeout: 8000 }
+    );
+  } else {
+    // Fallback if geolocation unavailable
+    const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(query)}`;
+    window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+  }
+}
+
+/* ==========================================================
+   2. HERO 3D SCROLL-LINKED PRESCRIPTION TRANSFORMATION
+   ========================================================== */
+function initHeroScroll3D(reducedMotion) {
+  if (reducedMotion) return;
+
+  const cardTransform = document.getElementById('card-3d-transform');
+  const cardScrawl = document.getElementById('card-scrawl-view');
+  const cardTranslated = document.getElementById('card-translated-view');
+  const scrollTrigger = document.getElementById('scroll-3d-trigger');
+
+  if (!cardTransform || !cardScrawl || !cardTranslated || !scrollTrigger) return;
+
+  let ticking = false;
+
+  function update3DCardOnScroll() {
+    const triggerRect = scrollTrigger.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+
+    // Calculate scroll progress relative to viewport (0 = top, 1 = scrolled past)
+    const startPoint = windowHeight * 0.8;
+    const endPoint = windowHeight * 0.2;
+    
+    let progress = (startPoint - triggerRect.top) / (startPoint - endPoint);
+    progress = Math.max(0, Math.min(1, progress)); // Clamp between 0.0 and 1.0
+
+    // Interpolate 3D Transformations
+    const rotateX = (1 - progress) * 25; // 25deg -> 0deg
+    const rotateY = (1 - progress) * -15; // -15deg -> 0deg
+    const scale = 0.92 + (progress * 0.08); // 0.92 -> 1.0
+
+    // Apply 3D transform matrix
+    cardTransform.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+
+    // Crossfade Card Opacities
+    cardScrawl.style.opacity = (1 - progress).toFixed(2);
+    cardTranslated.style.opacity = progress.toFixed(2);
+
+    if (progress > 0.5) {
+      cardScrawl.setAttribute('aria-hidden', 'true');
+      cardTranslated.setAttribute('aria-hidden', 'false');
+    } else {
+      cardScrawl.setAttribute('aria-hidden', 'false');
+      cardTranslated.setAttribute('aria-hidden', 'true');
+    }
 
     ticking = false;
   }
 
-  let ticking = false;
-  function onScroll() {
+  window.addEventListener('scroll', () => {
     if (!ticking) {
-      requestAnimationFrame(update);
+      window.requestAnimationFrame(update3DCardOnScroll);
       ticking = true;
     }
-  }
+  }, { passive: true });
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-  update();
+  // Initial call
+  update3DCardOnScroll();
 }
 
-/* =========================================================
-   2. Language flip cards (touch-friendly: tap toggles flip
-      in addition to the CSS :hover flip on desktop)
-   ========================================================= */
-function initLangCards() {
-  const cards = document.querySelectorAll(".lang-card");
-  cards.forEach((cardBtn) => {
-    cardBtn.addEventListener("click", () => {
-      cardBtn.classList.toggle("is-flipped");
+/* ==========================================================
+   3. WEB SPEECH SYNTHESIS VOICE ENGINE
+   ========================================================== */
+function initSpeechSynthesis() {
+  const introBtn = document.getElementById('main-voice-intro-btn');
+  const speakItemBtns = document.querySelectorAll('.speak-item-btn');
+  const playLangSpeechBtns = document.querySelectorAll('.play-lang-speech-btn');
+
+  const introSpeechText = "வணக்கம்! Nalam AI-க்கு வரவேற்கிறோம். உங்கள் மருந்துச் சீட்டைப் படம் பிடியுங்கள். நாங்கள் தமிழ், ஹிந்தி அல்லது தங்க்லீஷில் படித்துக் காட்டுகிறோம்.";
+
+  if (introBtn) {
+    introBtn.addEventListener('click', () => {
+      speakText(introSpeechText, 'ta-IN');
+    });
+  }
+
+  speakItemBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const text = btn.getAttribute('data-text');
+      if (text) {
+        speakText(text, 'ta-IN');
+      }
+    });
+  });
+
+  playLangSpeechBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const lang = btn.getAttribute('data-lang') || 'ta-IN';
+      const text = btn.getAttribute('data-speech');
+      if (text) {
+        speakText(text, lang);
+      }
     });
   });
 }
 
-/* =========================================================
-   3. Mode toggle (mock ↔ live)
-   ========================================================= */
-function initModeToggle() {
-  const modeSwitch = document.getElementById("modeSwitch");
-  const mockLabel = document.getElementById("mockLabel");
-  const liveLabel = document.getElementById("liveLabel");
-  if (!modeSwitch) return;
-
-  function setMode(isLive) {
-    if (isLive) {
-      modeSwitch.classList.add("is-live");
-      modeSwitch.setAttribute("aria-checked", "true");
-      mockLabel.classList.remove("is-active");
-      liveLabel.classList.add("is-active");
-      setApiConfig("live");
-    } else {
-      modeSwitch.classList.remove("is-live");
-      modeSwitch.setAttribute("aria-checked", "false");
-      mockLabel.classList.add("is-active");
-      liveLabel.classList.remove("is-active");
-      setApiConfig("mock");
-    }
+function speakText(text, lang = 'ta-IN') {
+  if (!('speechSynthesis' in window)) {
+    alert(`Voice playback: ${text}`);
+    return;
   }
 
-  modeSwitch.addEventListener("click", () => {
-    const isCurrentlyLive = modeSwitch.classList.contains("is-live");
-    setMode(!isCurrentlyLive);
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.9; // Slightly slower pace for low-literacy clarity
+  utterance.pitch = 1.0;
+
+  // Find suitable voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const matchedVoice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+  if (matchedVoice) {
+    utterance.voice = matchedVoice;
+  }
+
+  window.speechSynthesis.speak(utterance);
+}
+
+/* ==========================================================
+   4. LANGUAGE 3D FLIP CARD ACCESSIBILITY
+   ========================================================== */
+function initLanguageFlipCards() {
+  const flipCards = document.querySelectorAll('.flip-card');
+
+  flipCards.forEach(card => {
+    // Click toggle for touch mobile
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+    });
+
+    // Keyboard Accessibility (Enter or Space)
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.classList.toggle('flipped');
+      }
+    });
+  });
+}
+
+/* ==========================================================
+   5. SAFETY SEAL 3D MOUSE GYRO EFFECT
+   ========================================================== */
+function initSafetySealTilt(reducedMotion) {
+  if (reducedMotion) return;
+
+  const seal = document.getElementById('interactive-safety-seal');
+  if (!seal) return;
+
+  seal.addEventListener('mousemove', (e) => {
+    const rect = seal.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+
+    const rotateX = (-mouseY / rect.height) * 30; // Tilt range -15 to +15 deg
+    const rotateY = (mouseX / rect.width) * 30;
+
+    seal.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.08)`;
   });
 
-  modeSwitch.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
+  seal.addEventListener('mouseleave', () => {
+    seal.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+  });
+}
+
+/* ==========================================================
+   6. DRAG-AND-DROP FILE UPLOAD DEMO
+   ========================================================== */
+function initFileUploadDemo() {
+  const dropZone = document.getElementById('prescription-drop-zone');
+  const fileInput = document.getElementById('prescription-file-input');
+  const browseBtn = dropZone ? dropZone.querySelector('.btn-browse') : null;
+  const previewContainer = document.getElementById('upload-preview-container');
+  const previewImg = document.getElementById('preview-image-element');
+  const scanProgressFill = document.getElementById('scan-progress-fill');
+  const playDemoBtn = document.getElementById('play-demo-scanned-btn');
+  const demoScannedText = document.getElementById('demo-scanned-text');
+
+  if (!dropZone || !fileInput) return;
+
+  // Max 10MB limit (10 * 1024 * 1024 bytes)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  if (browseBtn) {
+    browseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
+
+  dropZone.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // Drag over / leave styles
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
       e.preventDefault();
-      const isCurrentlyLive = modeSwitch.classList.contains("is-live");
-      setMode(!isCurrentlyLive);
+      e.stopPropagation();
+      dropZone.classList.add('drag-over');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+    }, false);
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files.length > 0) {
+      handleUploadedFile(files[0]);
     }
   });
-}
 
-/* =========================================================
-   4. Language code mapping
-   ========================================================= */
-const LANG_MAP = {
-  hindi: "hi",
-  tamil: "ta",
-  tanglish: "ta-en",
-};
-
-const LANG_DISPLAY = {
-  hindi: "Hindi",
-  tamil: "Tamil",
-  tanglish: "Tanglish",
-};
-
-/* =========================================================
-   5. Result rendering helpers
-   ========================================================= */
-
-function _confidenceBar(confidence) {
-  const pct = Math.round(confidence * 100);
-  let level = "high";
-  if (pct < 50) level = "low";
-  else if (pct < 80) level = "mid";
-
-  return `
-    <span class="confidence-bar">
-      <span class="confidence-bar__track">
-        <span class="confidence-bar__fill confidence-bar__fill--${level}" style="width: ${pct}%"></span>
-      </span>
-      <span class="confidence-bar__label">${pct}%</span>
-    </span>`;
-}
-
-function _escapeHtml(str) {
-  if (!str) return "";
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function _renderPrescriptionTable(medicines) {
-  if (!medicines || medicines.length === 0) {
-    return `<p class="try-panel__placeholder">No medicines extracted from this document.</p>`;
-  }
-
-  const rows = medicines.map((med) => `
-    <tr>
-      <td><strong>${_escapeHtml(med.name)}</strong></td>
-      <td>${_escapeHtml(med.dosage)}</td>
-      <td class="muted">${_escapeHtml(med.frequency)}</td>
-      <td class="muted">${_escapeHtml(med.duration)}</td>
-      <td class="muted">${_escapeHtml(med.instructions)}</td>
-      <td>${_confidenceBar(med.confidence)}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="result-table">
-      <thead>
-        <tr>
-          <th>Medicine</th>
-          <th>Dosage</th>
-          <th>Frequency</th>
-          <th>Duration</th>
-          <th>Instructions</th>
-          <th>Confidence</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-function _renderLabTable(tests) {
-  if (!tests || tests.length === 0) {
-    return `<p class="try-panel__placeholder">No test results extracted from this document.</p>`;
-  }
-
-  const rows = tests.map((t) => `
-    <tr>
-      <td><strong>${_escapeHtml(t.test_name)}</strong></td>
-      <td>${_escapeHtml(t.value)}</td>
-      <td class="muted">${_escapeHtml(t.unit)}</td>
-      <td class="muted">${_escapeHtml(t.reference_range || "\u2014")}</td>
-      <td>${_confidenceBar(t.confidence)}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="result-table">
-      <thead>
-        <tr>
-          <th>Test</th>
-          <th>Value</th>
-          <th>Unit</th>
-          <th>Reference</th>
-          <th>Confidence</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-function _renderFlags(flags) {
-  if (!flags || flags.length === 0) return "";
-
-  const items = flags.map((f) => `
-    <div class="flag-item flag-item--${f.severity}">
-      <span class="flag-badge flag-badge--${f.severity}">${f.severity}</span>
-      <div>
-        <span class="flag-related">${_escapeHtml(f.related_to)}</span>
-        <span class="flag-message"> \u2014 ${_escapeHtml(f.message)}</span>
-      </div>
-    </div>
-  `).join("");
-
-  return `
-    <div class="flag-section">
-      <p class="flag-section__title">Safety Checks</p>
-      <div class="flag-list">${items}</div>
-    </div>`;
-}
-
-function _renderWarnings(warnings) {
-  if (!warnings || warnings.length === 0) return "";
-  const items = warnings.map((w) => `<li>${_escapeHtml(w)}</li>`).join("");
-  return `<ul class="warnings-list">${items}</ul>`;
-}
-
-function _renderDoctorNote(noteText) {
-  if (!noteText) return "";
-  return `
-    <div class="doctor-note" id="doctorNote">
-      <button class="doctor-note__toggle" id="doctorNoteToggle" type="button">Clinical Summary</button>
-      <div class="doctor-note__body">${_escapeHtml(noteText)}</div>
-    </div>`;
-}
-
-function _renderVoiceControls(langDisplay) {
-  return `
-    <div class="voice-controls">
-      <button class="voice-btn" id="voicePlayBtn" type="button">
-        \uD83D\uDD0A Listen in ${langDisplay}
-      </button>
-      <button class="voice-btn" id="voiceStopBtn" type="button" hidden>
-        \u23F9 Stop
-      </button>
-      <span class="voice-lang-label" id="voiceLangLabel"></span>
-    </div>`;
-}
-
-function renderResult(data, langKey) {
-  const sd = data.structured_data;
-  const langDisplay = LANG_DISPLAY[langKey] || langKey;
-  const isPrescription = sd.document_type === "prescription";
-
-  // Header
-  const headerItems = [];
-  headerItems.push(`<span class="result-header__doctype">${isPrescription ? "Prescription" : "Lab Report"}</span>`);
-  if (sd.patient_name) headerItems.push(`<span class="result-header__item"><strong>Patient:</strong> ${_escapeHtml(sd.patient_name)}</span>`);
-  if (sd.doctor_name) headerItems.push(`<span class="result-header__item"><strong>Doctor:</strong> ${_escapeHtml(sd.doctor_name)}</span>`);
-  if (sd.date) headerItems.push(`<span class="result-header__item"><strong>Date:</strong> ${_escapeHtml(sd.date)}</span>`);
-
-  // Data table
-  const tableHtml = isPrescription
-    ? _renderPrescriptionTable(sd.medicines)
-    : _renderLabTable(sd.tests);
-
-  // Raw notes (prescriptions only)
-  const notesHtml = sd.raw_notes
-    ? `<p style="font-size:0.85rem;color:var(--ink-soft);margin:0.6rem 0 0;"><strong style="color:var(--paper);">Notes:</strong> ${_escapeHtml(sd.raw_notes)}</p>`
-    : "";
-
-  return `
-    <div class="result-card">
-      <div class="result-header">${headerItems.join("")}</div>
-      ${tableHtml}
-      ${notesHtml}
-      ${_renderWarnings(data.extraction_warnings)}
-      ${_renderFlags(data.flags)}
-      ${_renderDoctorNote(data.doctor_note)}
-      ${_renderVoiceControls(langDisplay)}
-    </div>`;
-}
-
-/* =========================================================
-   6. Extraction panel — wired to real API
-   ========================================================= */
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10MB
-
-function initDemoPanel() {
-  const langBtns = document.querySelectorAll(".try-panel__lang-btn");
-  const demoBtn = document.getElementById("demoBtn");
-  const demoBtnLabel = document.getElementById("demoBtnLabel");
-  const resultBox = document.getElementById("demoResult");
-
-  const dropzone = document.getElementById("dropzone");
-  const fileInput = document.getElementById("fileInput");
-  const emptyState = document.getElementById("dropzoneEmpty");
-  const previewState = document.getElementById("dropzonePreview");
-  const previewImg = document.getElementById("previewImg");
-  const previewChip = document.getElementById("previewFileChip");
-  const previewFileName = document.getElementById("previewFileName");
-  const clearBtn = document.getElementById("clearUpload");
-
-  if (!demoBtn || !dropzone) return;
-
-  let activeLang = "hindi";
-  let uploadedFile = null;
-  let lastResult = null; // store for voice replay
-  let isPlaying = false;
-
-  // Language selector
-  langBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      langBtns.forEach((b) => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-      activeLang = btn.dataset.demoLang;
-    });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files.length > 0) {
+      handleUploadedFile(fileInput.files[0]);
+    }
   });
 
-  function resetResult() {
-    resultBox.innerHTML =
-      '<p class="try-panel__placeholder">Your explanation will appear here.</p>';
-    lastResult = null;
-  }
+  function handleUploadedFile(file) {
+    // 10MB Validation Check
+    if (file.size > MAX_FILE_SIZE) {
+      alert(`File size exceeds 10MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please upload a smaller image or document.`);
+      fileInput.value = '';
+      return;
+    }
 
-  function showLoading() {
-    resultBox.innerHTML = `
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
-        <p class="loading-label">Analyzing your document\u2026<br>This may take a few seconds.</p>
-      </div>`;
-  }
-
-  function showError(message, detail) {
-    resultBox.innerHTML = `
-      <div class="error-state">
-        <div class="error-state__icon">\u26A0\uFE0F</div>
-        <p class="error-state__message">${_escapeHtml(message)}</p>
-        ${detail ? `<p class="error-state__detail">${_escapeHtml(detail)}</p>` : ""}
-      </div>`;
-  }
-
-  function showFile(file) {
-    uploadedFile = file;
-    emptyState.hidden = true;
-    previewState.hidden = false;
-    previewFileName.textContent = file.name;
-
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
+    // Read and preview file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (previewImg) {
         previewImg.src = e.target.result;
-        previewImg.hidden = false;
-        previewChip.hidden = true;
-      };
+      }
+      if (previewContainer) {
+        previewContainer.style.display = 'block';
+        previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Simulate AI OCR progress bar
+      if (scanProgressFill) {
+        scanProgressFill.style.width = '0%';
+        setTimeout(() => { scanProgressFill.style.width = '40%'; }, 200);
+        setTimeout(() => { scanProgressFill.style.width = '80%'; }, 600);
+        setTimeout(() => { 
+          scanProgressFill.style.width = '100%'; 
+          if (demoScannedText) {
+            demoScannedText.textContent = `Scanned: ${file.name} — Paracetamol 500mg (1 Morning, 1 Night after meals)`;
+          }
+        }, 1200);
+      }
+    };
+
+    if (file.type.startsWith('image/')) {
       reader.readAsDataURL(file);
     } else {
-      previewImg.hidden = true;
-      previewChip.hidden = false;
+      // PDF or non-image document placeholder
+      if (previewImg) {
+        previewImg.src = 'hero_doctor_patient.png';
+      }
+      if (previewContainer) {
+        previewContainer.style.display = 'block';
+      }
     }
-
-    demoBtn.disabled = false;
-    demoBtnLabel.textContent = "Read this prescription";
-    resetResult();
   }
 
-  function clearFile() {
-    uploadedFile = null;
-    fileInput.value = "";
-    previewImg.src = "";
-    previewImg.hidden = true;
-    previewChip.hidden = true;
-    previewState.hidden = true;
-    emptyState.hidden = false;
-    demoBtn.disabled = true;
-    demoBtnLabel.textContent = "Upload a file to continue";
-    resetResult();
-    stopBrowserSpeech();
-  }
-
-  function handleFiles(fileList) {
-    const file = fileList && fileList[0];
-    if (!file) return;
-
-    const isAccepted = file.type.startsWith("image/");
-    if (!isAccepted) {
-      resultBox.innerHTML =
-        '<p class="try-panel__placeholder">Please upload a JPG, PNG, or WebP image.</p>';
-      return;
-    }
-    if (file.size > MAX_FILE_BYTES) {
-      resultBox.innerHTML =
-        '<p class="try-panel__placeholder">That file is over 10MB \u2014 try a smaller photo.</p>';
-      return;
-    }
-    showFile(file);
-  }
-
-  // click / keyboard to open file picker
-  dropzone.addEventListener("click", () => fileInput.click());
-  dropzone.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      fileInput.click();
-    }
-  });
-  fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
-
-  // drag and drop
-  ["dragenter", "dragover"].forEach((evt) => {
-    dropzone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropzone.classList.add("is-dragover");
-    });
-  });
-  ["dragleave", "drop"].forEach((evt) => {
-    dropzone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove("is-dragover");
-    });
-  });
-  dropzone.addEventListener("drop", (e) => {
-    handleFiles(e.dataTransfer.files);
-  });
-
-  clearBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    clearFile();
-  });
-
-  // ─── Main extraction button ───────────────────────────────────────────
-  demoBtn.addEventListener("click", async () => {
-    if (!uploadedFile) return;
-
-    demoBtn.disabled = true;
-    demoBtnLabel.textContent = "Reading prescription\u2026";
-    showLoading();
-    stopBrowserSpeech();
-
-    try {
-      const data = await extractDocument(uploadedFile);
-      lastResult = data;
-
-      // Render the structured result
-      resultBox.innerHTML = renderResult(data, activeLang);
-
-      // Wire up doctor note toggle
-      const noteToggle = document.getElementById("doctorNoteToggle");
-      const noteContainer = document.getElementById("doctorNote");
-      if (noteToggle && noteContainer) {
-        noteToggle.addEventListener("click", () => {
-          noteContainer.classList.toggle("is-open");
-        });
-      }
-
-      // Wire up voice controls
-      _wireVoiceControls(data, activeLang);
-
-      demoBtn.disabled = false;
-      demoBtnLabel.textContent = "Read this prescription again";
-    } catch (err) {
-      console.error("Extraction failed:", err);
-      if (err instanceof ApiError) {
-        showError(err.userMessage, `HTTP ${err.statusCode || "\u2014"}`);
-      } else {
-        showError(
-          "Something went wrong while reading your document.",
-          err.message
-        );
-      }
-      demoBtn.disabled = false;
-      demoBtnLabel.textContent = "Try again";
-    }
-  });
-
-  // ─── Voice playback ──────────────────────────────────────────────────
-  function _wireVoiceControls(data, langKey) {
-    const playBtn = document.getElementById("voicePlayBtn");
-    const stopBtn = document.getElementById("voiceStopBtn");
-    const langLabel = document.getElementById("voiceLangLabel");
-    if (!playBtn) return;
-
-    const voiceLangCode = LANG_MAP[langKey] || "hi";
-
-    playBtn.addEventListener("click", async () => {
-      if (isPlaying) return;
-      isPlaying = true;
-      playBtn.classList.add("is-playing");
-      playBtn.disabled = true;
-      stopBtn.hidden = false;
-      langLabel.textContent = "Speaking\u2026";
-
-      try {
-        const { transcript, error } = await generateVoiceExplanation(data, voiceLangCode);
-
-        if (error && !transcript) {
-          langLabel.textContent = `Voice unavailable: ${error}`;
-          return;
-        }
-
-        // For browser TTS, we play directly
-        await playBrowserSpeech(transcript, voiceLangCode);
-        langLabel.textContent = "Done";
-      } catch (err) {
-        console.error("Voice playback error:", err);
-        langLabel.textContent = "Voice playback failed";
-      } finally {
-        isPlaying = false;
-        playBtn.classList.remove("is-playing");
-        playBtn.disabled = false;
-        stopBtn.hidden = true;
-      }
-    });
-
-    stopBtn.addEventListener("click", () => {
-      stopBrowserSpeech();
-      isPlaying = false;
-      playBtn.classList.remove("is-playing");
-      playBtn.disabled = false;
-      stopBtn.hidden = true;
-      langLabel.textContent = "Stopped";
+  if (playDemoBtn && demoScannedText) {
+    playDemoBtn.addEventListener('click', () => {
+      speakText(demoScannedText.textContent, 'ta-IN');
     });
   }
 }
-
-/* =========================================================
-   Init
-   ========================================================= */
-document.addEventListener("DOMContentLoaded", () => {
-  initHeroScroll();
-  initLangCards();
-  initModeToggle();
-  initDemoPanel();
-});
