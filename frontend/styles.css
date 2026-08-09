@@ -1557,3 +1557,548 @@ body {
     transform: none !important;
   }
 }
+
+/* ==========================================================
+   API MODE TOGGLE
+   ========================================================== */
+.api-mode-group {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--color-deep-teal);
+  padding: 4px;
+  border-radius: var(--border-radius-full);
+  border: 2px solid var(--color-olive);
+  margin-top: var(--space-1);
+}
+
+.api-mode-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--border-radius-full);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-warm-cream);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-mode-btn.active {
+  background: var(--color-terracotta);
+  color: var(--color-warm-cream);
+}
+
+.api-mode-btn:hover:not(.active) {
+  background: rgba(245, 234, 214, 0.15);
+}
+
+.api-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.api-status-dot.mock { background: var(--color-mustard); }
+.api-status-dot.live { background: var(--color-olive); }
+
+/* ==========================================================
+   RESULTS CONTAINER — LOADING STATE
+   ========================================================== */
+.results-loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-3);
+}
+
+.loading-spinner {
+  width: 56px;
+  height: 56px;
+  border: 6px solid rgba(15, 82, 87, 0.2);
+  border-top: 6px solid var(--color-terracotta);
+  border-radius: 50%;
+  animation: spinLoader 1s linear infinite;
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--color-deep-teal);
+}
+
+.loading-subtext {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ==========================================================
+   RESULTS CONTAINER — ERROR STATE
+   ========================================================== */
+.results-error {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  gap: var(--space-3);
+}
+
+.error-icon {
+  font-size: 3rem;
+}
+
+.error-message {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-persian-plum);
+  text-align: center;
+  max-width: 500px;
+  line-height: 1.4;
+}
+
+.btn-try-again {
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  background: var(--color-terracotta);
+  color: var(--color-warm-cream);
+  border: none;
+  border-radius: var(--border-radius-full);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: transform 0.2s ease;
+}
+
+.btn-try-again:hover {
+  transform: scale(1.05);
+}
+
+/* ==========================================================
+   RESULTS PANEL
+   ========================================================== */
+.results-panel {
+  display: none;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 800px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.patient-info-bar {
+  background: var(--color-deep-teal);
+  color: var(--color-warm-cream);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--border-radius-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.result-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--color-deep-teal);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 3px solid var(--color-deep-teal);
+}
+
+.doc-type-badge {
+  margin-left: auto;
+  background: var(--color-deep-teal);
+  color: var(--color-warm-cream);
+  padding: 4px 12px;
+  border-radius: var(--border-radius-full);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.flags-count-badge {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ==========================================================
+   EXTRACTED ITEM ROWS (Medicines / Lab Tests)
+   ========================================================== */
+.extracted-data-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.extracted-item-row {
+  background: #FFFFFF;
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  border-left: 6px solid var(--color-terracotta);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.extracted-item-row:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.item-row-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.item-number {
+  width: 28px;
+  height: 28px;
+  background: var(--color-terracotta);
+  color: var(--color-warm-cream);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.item-name {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--color-deep-teal);
+}
+
+.item-dosage {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-terracotta);
+  background: rgba(193, 80, 46, 0.1);
+  padding: 2px 10px;
+  border-radius: var(--border-radius-sm);
+}
+
+.item-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-2);
+}
+
+.item-detail-chip {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(15, 82, 87, 0.08);
+  padding: 3px 10px;
+  border-radius: var(--border-radius-sm);
+}
+
+.confidence-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.confidence-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+.confidence-bar-track {
+  flex: 1;
+  height: 8px;
+  background: #E8E0D0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease-out;
+}
+
+.confidence-value {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--color-deep-teal);
+  min-width: 36px;
+  text-align: right;
+}
+
+.no-data-msg {
+  padding: var(--space-3);
+  text-align: center;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* ==========================================================
+   SAFETY FLAG CARDS
+   ========================================================== */
+.safety-flags-section {
+  margin-bottom: var(--space-4);
+}
+
+.safety-flag-card {
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  border-left: 6px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.safety-flag-card.flag-warning {
+  background: #FFF5F5;
+  border-left-color: var(--color-persian-plum);
+}
+
+.safety-flag-card.flag-caution {
+  background: #FFFBF0;
+  border-left-color: var(--color-mustard);
+}
+
+.safety-flag-card.flag-info {
+  background: #F0FAF5;
+  border-left-color: var(--color-olive);
+}
+
+.flag-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: 6px;
+}
+
+.flag-severity-icon { font-size: 1rem; }
+
+.flag-severity-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flag-warning .flag-severity-label { color: var(--color-persian-plum); }
+.flag-caution .flag-severity-label { color: #8B6914; }
+.flag-info .flag-severity-label    { color: var(--color-olive); }
+
+.flag-related-to {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--color-deep-teal);
+}
+
+.flag-message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.flag-source {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.no-flags-msg {
+  padding: var(--space-3);
+  text-align: center;
+  color: var(--color-olive);
+  font-weight: 700;
+  font-size: 1rem;
+  background: #F0FAF5;
+  border-radius: var(--border-radius-md);
+}
+
+/* ==========================================================
+   DOCTOR NOTE BOX
+   ========================================================== */
+.doctor-note-section {
+  margin-bottom: var(--space-4);
+}
+
+.doctor-note-box {
+  background: #1A2321;
+  color: #E8E0D0;
+  padding: var(--space-4);
+  border-radius: var(--border-radius-md);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 2px solid var(--color-olive);
+  margin: 0;
+}
+
+/* ==========================================================
+   VOICE CONTROLS BAR
+   ========================================================== */
+.voice-controls-bar {
+  background: var(--color-deep-teal);
+  color: var(--color-warm-cream);
+  padding: var(--space-4);
+  border-radius: var(--border-radius-lg);
+  border: 3px solid var(--color-mustard);
+  box-shadow: var(--shadow-glow);
+}
+
+.voice-controls-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.15rem;
+  font-weight: 900;
+  margin-bottom: var(--space-3);
+}
+
+.voice-lang-selector {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+}
+
+.voice-lang-pill {
+  flex: 1;
+  min-height: 48px;
+  padding: 0 var(--space-2);
+  background: rgba(245, 234, 214, 0.1);
+  color: var(--color-warm-cream);
+  border: 2px solid rgba(245, 234, 214, 0.3);
+  border-radius: var(--border-radius-md);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-lang-pill.active {
+  background: var(--color-terracotta);
+  border-color: var(--color-mustard);
+}
+
+.voice-lang-pill:hover:not(.active) {
+  background: rgba(245, 234, 214, 0.2);
+}
+
+.voice-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.voice-play-btn, .voice-stop-btn {
+  flex: 1;
+  min-height: 56px;
+  padding: 0 var(--space-4);
+  border: 3px solid var(--color-mustard);
+  border-radius: var(--border-radius-lg);
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.voice-play-btn {
+  background: var(--color-terracotta);
+  color: var(--color-warm-cream);
+}
+
+.voice-play-btn:hover { transform: scale(1.03); background: #d85c37; }
+
+.voice-stop-btn {
+  background: var(--color-persian-plum);
+  color: var(--color-warm-cream);
+}
+
+.voice-stop-btn:hover { transform: scale(1.03); }
+
+.voice-transcript-box {
+  margin-top: var(--space-3);
+  background: rgba(245, 234, 214, 0.1);
+  padding: var(--space-3);
+  border-radius: var(--border-radius-md);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.transcript-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-mustard);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.transcript-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+/* ==========================================================
+   EXTRACTION WARNINGS
+   ========================================================== */
+.extraction-warnings-box { margin-bottom: var(--space-3); }
+
+.extraction-warning-item {
+  background: #FFFBF0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--color-mustard);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8B6914;
+  margin-bottom: 6px;
+}

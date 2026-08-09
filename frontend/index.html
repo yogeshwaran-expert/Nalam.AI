@@ -366,8 +366,16 @@
           <h2 class="upload-title" data-i18n="upload_title">Try Uploading Your Prescription</h2>
           <p class="upload-subtitle" data-i18n="upload_subtitle">Drag and drop an image or PDF to test the reader</p>
           <div class="demo-disclosure-badge">
-            <span aria-hidden="true">ℹ️</span>
-            <span data-i18n="demo_badge">Client-side Interactive Demo • Max 10MB</span>
+            <span aria-hidden="true">⚡</span>
+            <span data-i18n="demo_badge">AI-Powered Document Reader • Max 10MB</span>
+          </div>
+          <div class="api-mode-group">
+            <button class="api-mode-btn active" id="api-mode-mock" type="button">
+              <span class="api-status-dot mock"></span>Demo Mode
+            </button>
+            <button class="api-mode-btn" id="api-mode-live" type="button">
+              <span class="api-status-dot live"></span>Live API
+            </button>
           </div>
         </div>
 
@@ -384,32 +392,93 @@
         </div>
 
         <!-- UPLOAD PREVIEW & LIVE SCAN CONTAINER -->
+        <!-- RESULTS CONTAINER (Loading / Error / Results states) -->
         <div class="upload-preview-container" id="upload-preview-container">
-          <div class="preview-grid">
-            <div class="preview-media-box">
-              <img id="preview-image-element" src="" alt="Uploaded prescription preview">
-              <div class="ocr-bounding-box" style="top: 20%; left: 10%; width: 75%; height: 25%;"></div>
-              <div class="ocr-bounding-box" style="top: 55%; left: 10%; width: 75%; height: 25%;"></div>
+
+          <!-- Loading State -->
+          <div class="results-loading" id="results-loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">🔍 AI is reading your document...</div>
+            <div class="loading-subtext">Extracting data • Checking safety • Preparing voice</div>
+          </div>
+
+          <!-- Error State -->
+          <div class="results-error" id="results-error">
+            <div class="error-icon">⚠️</div>
+            <div class="error-message" id="error-message-text"></div>
+            <button class="btn-try-again" id="btn-try-again" type="button">
+              🔄 Try Again
+            </button>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="results-panel" id="results-panel">
+            <!-- Patient Info -->
+            <div class="patient-info-bar" id="patient-info">👤 Awaiting document upload...</div>
+
+            <!-- Preview Image + Extracted Data -->
+            <div class="results-grid">
+              <div class="preview-media-box">
+                <img id="preview-image-element" src="" alt="Uploaded document preview">
+              </div>
+              <div class="extracted-data-section">
+                <div class="result-section-header">
+                  <span aria-hidden="true">✅</span>
+                  <span>Extracted Data</span>
+                  <span class="doc-type-badge" id="doc-type-badge"></span>
+                </div>
+                <div id="extracted-items-list"></div>
+              </div>
             </div>
 
-            <div class="simulated-results-box">
-              <div class="result-heading">
-                <span aria-hidden="true">✅</span>
-                <span>AI Scanned Output</span>
-              </div>
-              <div class="scan-progress-bar">
-                <div class="scan-progress-fill" id="scan-progress-fill"></div>
-              </div>
+            <!-- Extraction Warnings -->
+            <div class="extraction-warnings-box" id="extraction-warnings" style="display: none;"></div>
 
-              <div class="audio-output-pill" style="margin-top: var(--space-2);">
-                <div>
-                  <strong style="color: var(--color-deep-teal); font-size: 1.1rem;">Deciphered Dosage Audio</strong>
-                  <p style="font-size: 0.9rem; color: var(--text-muted);" id="demo-scanned-text">Paracetamol 500mg - 1 tablet morning, 1 night after meals.</p>
-                </div>
-                <button id="play-demo-scanned-btn" class="play-voice-pill" type="button" aria-label="Play deciphered prescription audio">🔊</button>
+            <!-- Safety Flags -->
+            <div class="safety-flags-section" id="safety-flags-section">
+              <div class="result-section-header">
+                <span aria-hidden="true">🛡️</span>
+                <span>Safety Check Results</span>
+                <span class="flags-count-badge" id="flags-count-badge"></span>
+              </div>
+              <div id="safety-flags-list"></div>
+            </div>
+
+            <!-- Doctor Note -->
+            <div class="doctor-note-section">
+              <div class="result-section-header">
+                <span aria-hidden="true">📝</span>
+                <span>Clinical Summary (Doctor View)</span>
+              </div>
+              <pre class="doctor-note-box" id="doctor-note-content"></pre>
+            </div>
+
+            <!-- Voice Controls -->
+            <div class="voice-controls-bar">
+              <div class="voice-controls-header">
+                <span aria-hidden="true">🔊</span>
+                <span>Listen in Your Language</span>
+              </div>
+              <div class="voice-lang-selector">
+                <button class="voice-lang-pill active" data-voice-lang="ta" type="button">தமிழ் Tamil</button>
+                <button class="voice-lang-pill" data-voice-lang="hi" type="button">हिंदी Hindi</button>
+                <button class="voice-lang-pill" data-voice-lang="ta-en" type="button">Tanglish</button>
+              </div>
+              <div class="voice-actions">
+                <button class="voice-play-btn" id="voice-play-btn" type="button" aria-label="Play voice explanation">
+                  ▶️ Play Voice Explanation
+                </button>
+                <button class="voice-stop-btn" id="voice-stop-btn" type="button" style="display: none;" aria-label="Stop voice">
+                  ⏹️ Stop
+                </button>
+              </div>
+              <div class="voice-transcript-box" id="voice-transcript-box" style="display: none;">
+                <div class="transcript-label">Transcript</div>
+                <div class="transcript-text" id="voice-transcript-text"></div>
               </div>
             </div>
           </div>
+
         </div>
 
       </div>
@@ -495,6 +564,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
