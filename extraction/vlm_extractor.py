@@ -285,19 +285,45 @@ def _pdf_to_image_bytes(pdf_bytes: bytes, dpi: int = 150) -> bytes:
         # Fast path: single page — no stitching needed
         return pixmaps[0].tobytes(output="png")
 
-    # Multi-page: stitch pages vertically into one image
+    # Multi-page: stitch pages vertically.
+    #
+    # PyMuPDF's Pixmap.copy() has strict alpha/colorspace constraints that make
+    # offset-aware pasting unreliable across versions.  Instead we work directly
+    # with the raw RGB sample bytes:
+    #   - Each page pixmap exposes its pixels as a flat bytes object (RGB triples)
+    #   - We build a bytearray for the combined canvas (white = 0xFF)
+    #   - We write each page's rows into the correct y-offset in the canvas
+    #   - Finally we create a new Pixmap from the buffer — no copy() needed
+
     total_width = max(p.width for p in pixmaps)
     total_height = sum(p.height for p in pixmaps)
 
-    combined = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, total_width, total_height))
-    combined.set_rect(combined.irect, (255, 255, 255))  # white background
+    # Allocate white canvas (3 bytes per pixel — RGB, no alpha)
+    canvas = bytearray(b"\xff" * (total_width * total_height * 3))
 
     y_offset = 0
     for pix in pixmaps:
-        combined.copy(pix, fitz.IRect(0, y_offset, pix.width, y_offset + pix.height))
+        # Ensure no alpha channel in source — strip it if present
+        if pix.alpha:
+            pix = fitz.Pixmap(fitz.csRGB, pix)  # drop alpha
+
+        page_samples = pix.samples          # flat RGB bytes, row-major
+        page_w = pix.width
+        row_bytes_src = page_w * 3          # bytes per source row
+        row_bytes_dst = total_width * 3     # bytes per destination row
+
+        for row in range(pix.height):
+            src_start = row * row_bytes_src
+            src_end   = src_start + row_bytes_src
+            dst_start = (y_offset + row) * row_bytes_dst
+            dst_end   = dst_start + row_bytes_src    # only write page_w pixels
+            canvas[dst_start:dst_end] = page_samples[src_start:src_end]
+
         y_offset += pix.height
 
+    combined = fitz.Pixmap(fitz.csRGB, total_width, total_height, bytes(canvas), False)
     png_bytes = combined.tobytes(output="png")
+
     logger.info(
         "PDF rasterized: %d page(s) → %dx%d px PNG (%d bytes)",
         len(pixmaps),
