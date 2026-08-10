@@ -19,6 +19,14 @@ from typing import Any
 import anthropic
 from pydantic import TypeAdapter, ValidationError
 
+try:
+    import pymupdf as fitz  # PyMuPDF >= 1.24  (preferred import name)
+except ImportError:
+    try:
+        import fitz  # type: ignore[no-redef]  # PyMuPDF < 1.24 legacy name
+    except ImportError:
+        fitz = None  # type: ignore[assignment]  # PDF uploads will raise ExtractionError at runtime
+
 from extraction.prompts import RETRY_PROMPT, SYSTEM_PROMPT, USER_INSTRUCTION
 from extraction.schemas import ExtractionResult, LabReportResult, PrescriptionResult        
 
@@ -250,16 +258,11 @@ def _pdf_to_image_bytes(pdf_bytes: bytes, dpi: int = 150) -> bytes:
     Raises:
         ExtractionError: If the PDF cannot be opened or has no pages.
     """
-    try:
-        import pymupdf as fitz  # PyMuPDF >= 1.24 (preferred name)
-    except ImportError:
-        try:
-            import fitz  # PyMuPDF < 1.24 legacy name
-        except ImportError as exc:
-            raise ExtractionError(
-                "PyMuPDF is required for PDF support. "
-                "Install it with: pip install PyMuPDF"
-            ) from exc
+    if fitz is None:
+        raise ExtractionError(
+            "PyMuPDF is required for PDF support. "
+            "Install it with: pip install PyMuPDF"
+        )
 
     try:
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
