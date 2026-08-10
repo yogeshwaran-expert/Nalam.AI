@@ -2,6 +2,13 @@
  * Nalam AI (நலம்) — 3D Interactive & Accessible Voice Engine
  */
 
+import { extractDocument, setApiConfig, getApiConfig, ApiError } from './api/client.js';
+import { buildSpokenScript } from './voice/scriptBuilder.js';
+
+// ─── Module-level state for voice playback ──────────────────────────────────
+let lastExtractionResult = null;
+let currentVoiceLang = 'ta';
+
 document.addEventListener('DOMContentLoaded', () => {
   // Check if reduced motion is requested
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -14,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLanguageFlipCards();
   initSafetySealTilt(prefersReducedMotion);
   initFileUploadDemo();
+  initApiModeToggle();
 });
 
 /* ==========================================================
@@ -472,23 +480,24 @@ function initSafetySealTilt(reducedMotion) {
 }
 
 /* ==========================================================
-   6. DRAG-AND-DROP FILE UPLOAD DEMO
+   6. DRAG-AND-DROP FILE UPLOAD + REAL API INTEGRATION
    ========================================================== */
 function initFileUploadDemo() {
   const dropZone = document.getElementById('prescription-drop-zone');
   const fileInput = document.getElementById('prescription-file-input');
   const browseBtn = dropZone ? dropZone.querySelector('.btn-browse') : null;
   const previewContainer = document.getElementById('upload-preview-container');
+  const loadingState = document.getElementById('results-loading');
+  const errorState = document.getElementById('results-error');
+  const resultsPanel = document.getElementById('results-panel');
   const previewImg = document.getElementById('preview-image-element');
-  const scanProgressFill = document.getElementById('scan-progress-fill');
-  const playDemoBtn = document.getElementById('play-demo-scanned-btn');
-  const demoScannedText = document.getElementById('demo-scanned-text');
+  const tryAgainBtn = document.getElementById('btn-try-again');
 
   if (!dropZone || !fileInput) return;
 
-  // Max 10MB limit (10 * 1024 * 1024 bytes)
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+  // Browse button opens native file picker
   if (browseBtn) {
     browseBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -496,9 +505,7 @@ function initFileUploadDemo() {
     });
   }
 
-  dropZone.addEventListener('click', () => {
-    fileInput.click();
-  });
+  dropZone.addEventListener('click', () => fileInput.click());
 
   // Drag over / leave styles
   ['dragenter', 'dragover'].forEach(eventName => {
@@ -518,11 +525,8 @@ function initFileUploadDemo() {
   });
 
   dropZone.addEventListener('drop', (e) => {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    if (files && files.length > 0) {
-      handleUploadedFile(files[0]);
-    }
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) handleUploadedFile(files[0]);
   });
 
   fileInput.addEventListener('change', () => {
@@ -531,55 +535,321 @@ function initFileUploadDemo() {
     }
   });
 
-  function handleUploadedFile(file) {
-    // 10MB Validation Check
+  // Try Again button resets back to drop zone
+  if (tryAgainBtn) {
+    tryAgainBtn.addEventListener('click', () => {
+      showState('idle');
+      fileInput.value = '';
+    });
+  }
+
+  // Initialize voice controls in the results panel
+  initVoiceControls();
+
+  // ── State management ────────────────────────────────────────────────────
+  function showState(state) {
+    if (previewContainer) previewContainer.style.display = state === 'idle' ? 'none' : 'block';
+    if (loadingState) loadingState.style.display = state === 'loading' ? 'flex' : 'none';
+    if (errorState) errorState.style.display = state === 'error' ? 'flex' : 'none';
+    if (resultsPanel) resultsPanel.style.display = state === 'results' ? 'block' : 'none';
+  }
+
+  // ── Main upload handler ─────────────────────────────────────────────────
+  async function handleUploadedFile(file) {
+    // File size validation
     if (file.size > MAX_FILE_SIZE) {
-      alert(`File size exceeds 10MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please upload a smaller image or document.`);
+      alert(`File size exceeds 10MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please upload a smaller file.`);
       fileInput.value = '';
       return;
     }
 
-    // Read and preview file
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (previewImg) {
-        previewImg.src = e.target.result;
-      }
-      if (previewContainer) {
-        previewContainer.style.display = 'block';
-        previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-
-      // Simulate AI OCR progress bar
-      if (scanProgressFill) {
-        scanProgressFill.style.width = '0%';
-        setTimeout(() => { scanProgressFill.style.width = '40%'; }, 200);
-        setTimeout(() => { scanProgressFill.style.width = '80%'; }, 600);
-        setTimeout(() => { 
-          scanProgressFill.style.width = '100%'; 
-          if (demoScannedText) {
-            demoScannedText.textContent = `Scanned: ${file.name} — Paracetamol 500mg (1 Morning, 1 Night after meals)`;
-          }
-        }, 1200);
-      }
-    };
-
-    if (file.type.startsWith('image/')) {
+    // Show image preview
+    if (file.type.startsWith('image/') && previewImg) {
+      const reader = new FileReader();
+      reader.onload = (e) => { previewImg.src = e.target.result; };
       reader.readAsDataURL(file);
+    } else if (previewImg) {
+      previewImg.src = 'hero_doctor_patient.png';
+    }
+
+    // Show loading state and scroll into view
+    showState('loading');
+    if (previewContainer) {
+      previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Call the API (mock or live depending on current mode)
+    try {
+      const response = await extractDocument(file);
+      lastExtractionResult = response;
+      renderResults(response);
+      showState('results');
+    } catch (err) {
+      console.error('Extraction failed:', err);
+      const errorMsg = document.getElementById('error-message-text');
+      if (errorMsg) {
+        errorMsg.textContent = (err && err.userMessage)
+          ? err.userMessage
+          : 'Something went wrong while reading your document. Please try again.';
+      }
+      showState('error');
+    }
+  }
+}
+
+/* ==========================================================
+   7. API MODE TOGGLE (MOCK / LIVE)
+   ========================================================== */
+function initApiModeToggle() {
+  const mockBtn = document.getElementById('api-mode-mock');
+  const liveBtn = document.getElementById('api-mode-live');
+
+  if (!mockBtn || !liveBtn) return;
+
+  mockBtn.addEventListener('click', () => {
+    setApiConfig('mock');
+    mockBtn.classList.add('active');
+    liveBtn.classList.remove('active');
+  });
+
+  liveBtn.addEventListener('click', () => {
+    setApiConfig('live');
+    liveBtn.classList.add('active');
+    mockBtn.classList.remove('active');
+  });
+}
+
+/* ==========================================================
+   8. RESULTS RENDERING ENGINE
+   ========================================================== */
+function renderResults(response) {
+  const data = response.structured_data;
+  const flags = response.flags || [];
+  const doctorNote = response.doctor_note || '';
+
+  // Document type badge
+  const badge = document.getElementById('doc-type-badge');
+  if (badge) {
+    badge.textContent = data.document_type === 'prescription' ? '📋 Prescription' : '🧪 Lab Report';
+  }
+
+  // Patient info bar
+  const patientInfo = document.getElementById('patient-info');
+  if (patientInfo) {
+    const parts = [];
+    if (data.patient_name) parts.push(`👤 ${data.patient_name}`);
+    if (data.doctor_name) parts.push(`👨‍⚕️ ${data.doctor_name}`);
+    if (data.date) parts.push(`📅 ${data.date}`);
+    patientInfo.innerHTML = parts.length > 0
+      ? parts.join(' &nbsp;•&nbsp; ')
+      : '👤 Patient info not available in document';
+  }
+
+  // Render extracted items (medicines or lab tests)
+  const itemsList = document.getElementById('extracted-items-list');
+  if (itemsList) {
+    if (data.document_type === 'prescription') {
+      itemsList.innerHTML = renderMedicines(data.medicines || []);
     } else {
-      // PDF or non-image document placeholder
-      if (previewImg) {
-        previewImg.src = 'hero_doctor_patient.png';
-      }
-      if (previewContainer) {
-        previewContainer.style.display = 'block';
-      }
+      itemsList.innerHTML = renderLabTests(data.tests || []);
     }
   }
 
-  if (playDemoBtn && demoScannedText) {
-    playDemoBtn.addEventListener('click', () => {
-      speakText(demoScannedText.textContent, 'ta-IN');
+  // Extraction warnings
+  const warningsEl = document.getElementById('extraction-warnings');
+  if (warningsEl) {
+    const warnings = response.extraction_warnings || [];
+    if (warnings.length > 0) {
+      warningsEl.style.display = 'block';
+      warningsEl.innerHTML = warnings.map(w =>
+        `<div class="extraction-warning-item">⚠️ ${escapeHtml(w)}</div>`
+      ).join('');
+    } else {
+      warningsEl.style.display = 'none';
+    }
+  }
+
+  // Safety flags
+  renderSafetyFlags(flags);
+
+  // Doctor note
+  const noteContent = document.getElementById('doctor-note-content');
+  if (noteContent) noteContent.textContent = doctorNote;
+}
+
+function renderMedicines(medicines) {
+  if (medicines.length === 0) {
+    return '<div class="no-data-msg">No medicines found in this document.</div>';
+  }
+
+  return medicines.map((med, i) => `
+    <div class="extracted-item-row">
+      <div class="item-row-header">
+        <span class="item-number">${i + 1}</span>
+        <span class="item-name">💊 ${escapeHtml(med.name)}</span>
+        <span class="item-dosage">${escapeHtml(med.dosage)}</span>
+      </div>
+      <div class="item-details">
+        <span class="item-detail-chip">🕐 ${escapeHtml(med.frequency)}</span>
+        <span class="item-detail-chip">📅 ${escapeHtml(med.duration)}</span>
+        ${med.instructions ? `<span class="item-detail-chip">📝 ${escapeHtml(med.instructions)}</span>` : ''}
+      </div>
+      <div class="confidence-row">
+        <span class="confidence-label">Confidence</span>
+        <div class="confidence-bar-track">
+          <div class="confidence-bar-fill" style="width: ${(med.confidence * 100).toFixed(0)}%; background-color: ${getConfidenceColor(med.confidence)};"></div>
+        </div>
+        <span class="confidence-value">${(med.confidence * 100).toFixed(0)}%</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderLabTests(tests) {
+  if (tests.length === 0) {
+    return '<div class="no-data-msg">No test results found in this document.</div>';
+  }
+
+  return tests.map((test, i) => `
+    <div class="extracted-item-row">
+      <div class="item-row-header">
+        <span class="item-number">${i + 1}</span>
+        <span class="item-name">🧪 ${escapeHtml(test.test_name)}</span>
+        <span class="item-dosage">${escapeHtml(test.value)} ${escapeHtml(test.unit)}</span>
+      </div>
+      <div class="item-details">
+        ${test.reference_range ? `<span class="item-detail-chip">📊 Ref: ${escapeHtml(test.reference_range)}</span>` : ''}
+      </div>
+      <div class="confidence-row">
+        <span class="confidence-label">Confidence</span>
+        <div class="confidence-bar-track">
+          <div class="confidence-bar-fill" style="width: ${(test.confidence * 100).toFixed(0)}%; background-color: ${getConfidenceColor(test.confidence)};"></div>
+        </div>
+        <span class="confidence-value">${(test.confidence * 100).toFixed(0)}%</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSafetyFlags(flags) {
+  const list = document.getElementById('safety-flags-list');
+  const countBadge = document.getElementById('flags-count-badge');
+
+  if (!list) return;
+
+  // Update count badge
+  if (countBadge) {
+    const warnings = flags.filter(f => f.severity === 'warning').length;
+    const cautions = flags.filter(f => f.severity === 'caution').length;
+    const infos = flags.filter(f => f.severity === 'info').length;
+    const parts = [];
+    if (warnings > 0) parts.push(`${warnings} warning${warnings > 1 ? 's' : ''}`);
+    if (cautions > 0) parts.push(`${cautions} caution${cautions > 1 ? 's' : ''}`);
+    if (infos > 0) parts.push(`${infos} info`);
+    countBadge.textContent = parts.join(', ') || 'All clear ✅';
+  }
+
+  if (flags.length === 0) {
+    list.innerHTML = '<div class="no-flags-msg">✅ No safety concerns found — all values within expected ranges.</div>';
+    return;
+  }
+
+  const severityConfig = {
+    warning: { icon: '🔴', label: 'WARNING', cssClass: 'flag-warning' },
+    caution: { icon: '🟡', label: 'CAUTION', cssClass: 'flag-caution' },
+    info:    { icon: '🟢', label: 'INFO',    cssClass: 'flag-info' },
+  };
+
+  list.innerHTML = flags.map(flag => {
+    const config = severityConfig[flag.severity] || severityConfig.info;
+    return `
+      <div class="safety-flag-card ${config.cssClass}">
+        <div class="flag-header">
+          <span class="flag-severity-icon">${config.icon}</span>
+          <span class="flag-severity-label">${config.label}</span>
+          <span class="flag-related-to">${escapeHtml(flag.related_to)}</span>
+        </div>
+        <div class="flag-message">${escapeHtml(flag.message)}</div>
+        <div class="flag-source">Source: ${escapeHtml(flag.source)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getConfidenceColor(confidence) {
+  if (confidence >= 0.8) return 'var(--color-olive)';
+  if (confidence >= 0.5) return 'var(--color-mustard)';
+  return 'var(--color-terracotta)';
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = String(text);
+  return div.innerHTML;
+}
+
+/* ==========================================================
+   9. VOICE CONTROLS FOR RESULTS
+   ========================================================== */
+function initVoiceControls() {
+  const langPills = document.querySelectorAll('.voice-lang-pill');
+  const playBtn = document.getElementById('voice-play-btn');
+  const stopBtn = document.getElementById('voice-stop-btn');
+  const transcriptBox = document.getElementById('voice-transcript-box');
+  const transcriptText = document.getElementById('voice-transcript-text');
+
+  // Language selection
+  langPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      langPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      currentVoiceLang = pill.getAttribute('data-voice-lang');
+    });
+  });
+
+  // Play button — builds a spoken script and reads it aloud
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      if (!lastExtractionResult) return;
+
+      // Build the spoken script in the selected language
+      const script = buildSpokenScript(lastExtractionResult, currentVoiceLang);
+
+      // Show transcript panel
+      if (transcriptBox) transcriptBox.style.display = 'block';
+      if (transcriptText) transcriptText.textContent = script;
+
+      // Map our language codes to Web Speech API lang codes
+      const langMap = { ta: 'ta-IN', hi: 'hi-IN', 'ta-en': 'en-IN' };
+      const speechLang = langMap[currentVoiceLang] || 'ta-IN';
+
+      // Speak using the existing speakText function
+      speakText(script, speechLang);
+
+      // Toggle play/stop button visibility
+      playBtn.style.display = 'none';
+      if (stopBtn) stopBtn.style.display = 'inline-flex';
+
+      // Monitor when speech finishes to reset buttons
+      const checkSpeechDone = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          clearInterval(checkSpeechDone);
+          playBtn.style.display = 'inline-flex';
+          if (stopBtn) stopBtn.style.display = 'none';
+        }
+      }, 500);
+    });
+  }
+
+  // Stop button — cancels speech immediately
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      stopBtn.style.display = 'none';
+      if (playBtn) playBtn.style.display = 'inline-flex';
     });
   }
 }

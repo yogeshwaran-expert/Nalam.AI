@@ -1,6 +1,10 @@
 """
 Core extraction logic: sends a medical document image to Claude Vision
 and returns validated structured data.
+
+PDF support: multi-page PDFs are rasterized via PyMuPDF and stitched into
+a single PNG before being sent to Claude.  This keeps the rest of the
+pipeline (single-image → single JSON extraction) unchanged.
 """
 
 from __future__ import annotations
@@ -226,6 +230,84 @@ def extract_document(image_path: str) -> dict[str, Any]:
         )
 
 
+# ─── PDF → image conversion ──────────────────────────────────────────────────
+
+
+def _pdf_to_image_bytes(pdf_bytes: bytes, dpi: int = 150) -> bytes:
+    """Rasterize a PDF (all pages) into a single vertically-stacked PNG.
+
+    Each page is rendered at *dpi* dots-per-inch and then stitched together
+    so that the existing single-image extraction pipeline requires no changes.
+
+    Args:
+        pdf_bytes: Raw bytes of the PDF file.
+        dpi:       Render resolution.  150 DPI is a good balance between
+                   legibility (Claude needs to read text) and payload size.
+
+    Returns:
+        PNG bytes of the combined image.
+
+    Raises:
+        ExtractionError: If the PDF cannot be opened or has no pages.
+    """
+    try:
+        import pymupdf as fitz  # PyMuPDF >= 1.24 (preferred name)
+    except ImportError:
+        try:
+            import fitz  # PyMuPDF < 1.24 legacy name
+        except ImportError as exc:
+            raise ExtractionError(
+                "PyMuPDF is required for PDF support. "
+                "Install it with: pip install PyMuPDF"
+            ) from exc
+
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    except Exception as exc:
+        raise ExtractionError(f"Could not open PDF: {exc}") from exc
+
+    if doc.page_count == 0:
+        raise ExtractionError("The uploaded PDF has no pages.")
+
+    # Render every page and collect pixel-maps
+    zoom = dpi / 72  # PyMuPDF's default is 72 DPI
+    matrix = fitz.Matrix(zoom, zoom)
+    pixmaps: list[fitz.Pixmap] = []
+
+    for page_num in range(doc.page_count):
+        page = doc.load_page(page_num)
+        pix = page.get_pixmap(matrix=matrix, alpha=False)
+        pixmaps.append(pix)
+
+    doc.close()
+
+    if len(pixmaps) == 1:
+        # Fast path: single page — no stitching needed
+        return pixmaps[0].tobytes(output="png")
+
+    # Multi-page: stitch pages vertically into one image
+    total_width = max(p.width for p in pixmaps)
+    total_height = sum(p.height for p in pixmaps)
+
+    combined = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, total_width, total_height))
+    combined.set_rect(combined.irect, (255, 255, 255))  # white background
+
+    y_offset = 0
+    for pix in pixmaps:
+        combined.copy(pix, fitz.IRect(0, y_offset, pix.width, y_offset + pix.height))
+        y_offset += pix.height
+
+    png_bytes = combined.tobytes(output="png")
+    logger.info(
+        "PDF rasterized: %d page(s) → %dx%d px PNG (%d bytes)",
+        len(pixmaps),
+        total_width,
+        total_height,
+        len(png_bytes),
+    )
+    return png_bytes
+
+
 # ─── Convenience: extract from raw bytes (used by API endpoint) ─────────────
 
 
@@ -234,11 +316,21 @@ def extract_document_from_bytes(
 ) -> dict[str, Any]:
     """Extract from in-memory image bytes by writing to a temp file.
 
+    Accepts both image files (JPEG, PNG, WEBP, GIF) and PDF files.
+    PDFs are rasterized to a single PNG via :func:`_pdf_to_image_bytes`
+    before being passed through the standard extraction pipeline.
+
     This avoids the API endpoint needing to manage temp files directly.
     """
     import tempfile
 
-    suffix = Path(filename).suffix or ".jpg"
+    suffix = Path(filename).suffix.lower() or ".jpg"
+
+    # ── PDF path: rasterize first, then treat as PNG ─────────────────────────
+    if suffix == ".pdf":
+        logger.info("PDF detected — rasterizing before extraction: %s", filename)
+        image_bytes = _pdf_to_image_bytes(image_bytes)
+        suffix = ".png"
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(image_bytes)

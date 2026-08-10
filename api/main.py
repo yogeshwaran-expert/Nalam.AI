@@ -32,12 +32,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Allowed image content types
+# Allowed upload content types
 _ALLOWED_CONTENT_TYPES = {
     "image/jpeg",
     "image/png",
     "image/webp",
     "image/gif",
+    "application/pdf",
 }
 
 
