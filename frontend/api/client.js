@@ -12,7 +12,7 @@ import { MOCK_PRESCRIPTION, MOCK_LAB_REPORT } from "./mockData.js";
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const CONFIG = {
-  mode: "mock", // "mock" | "live" | "demo"
+  mode: "live", // "mock" | "live" | "demo"
   backendUrl: "http://localhost:8000",
   // Pre-recorded fallback for demo day (relative paths from frontend/)
   demoFallbackFile: "./fallback/demo_result.json",
