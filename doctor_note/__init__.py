@@ -1,1 +1,1 @@
-# ArogyaSight AI — Doctor Note Module
+# Nalam AI — Doctor Note Module
