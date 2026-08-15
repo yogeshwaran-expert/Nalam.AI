@@ -38,9 +38,9 @@ Existing tools solve the institution's problem — getting messy documents into 
 Layer	Technology
 Document extraction	Claude (Anthropic API, vision) — VLM-based layout-aware parsing
 Safety/guideline check	Curated JSON knowledge base + fuzzy matching (rapidfuzz)
-Voice output	Sarvam AI TTS / Google Cloud TTS (Indic multilingual voices)
+Voice output	Web Speech API (browser-native TTS with Indic language support)
 Backend	Python, FastAPI, Pydantic
-Frontend	React (Stitch-generated UI), Framer Motion, Tailwind CSS
+Frontend	Vanilla HTML, CSS, JavaScript (ES modules, Web Speech API, i18n engine)
 Hosting (demo)	Vercel/Netlify (frontend), Render/Railway (backend)
 Version control	GitHub
 

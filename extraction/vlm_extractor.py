@@ -12,6 +12,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,9 @@ logger = logging.getLogger(__name__)
 
 # Discriminated-union validator
 _result_adapter = TypeAdapter(ExtractionResult)
+
+# Model name — configurable via env var, defaults to claude-sonnet-4-6
+_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 
 # Supported image MIME types
 _MEDIA_TYPES: dict[str, str] = {
@@ -138,7 +142,7 @@ def extract_document(image_path: str) -> dict[str, Any]:
 
     try:
         response = client.messages.create(
-            model="claude-sonnet-4-6",
+            model=_MODEL,
             max_tokens=4096,
             system=SYSTEM_PROMPT,
             messages=[
@@ -184,7 +188,7 @@ def extract_document(image_path: str) -> dict[str, Any]:
 
     try:
         retry_response = client.messages.create(
-            model="claude-sonnet-4-6",
+            model=_MODEL,
             max_tokens=4096,
             system=SYSTEM_PROMPT,
             messages=[

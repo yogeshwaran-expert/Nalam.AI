@@ -52,10 +52,12 @@ def load_knowledge_base() -> dict[str, Any]:
 # ─── Internal: build name→entry lookup ───────────────────────────────────────
 
 
-def _build_drug_lookup() -> dict[str, dict[str, Any]]:
+@functools.lru_cache(maxsize=1)
+def _build_drug_lookup() -> tuple[tuple[str, ...], tuple]:
     """Build a flat mapping of every drug name/alias → KB entry.
 
     Keys are lowercased for case-insensitive matching.
+    Returns a cached result (wrapped for hashability; unwrap via _get_drug_lookup).
     """
     kb = load_knowledge_base()
     lookup: dict[str, dict[str, Any]] = {}
@@ -68,6 +70,7 @@ def _build_drug_lookup() -> dict[str, dict[str, Any]]:
     return lookup
 
 
+@functools.lru_cache(maxsize=1)
 def _build_lab_test_lookup() -> dict[str, dict[str, Any]]:
     """Build a flat mapping of every lab test name/alias → KB entry.
 

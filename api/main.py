@@ -1,5 +1,5 @@
 """
-ArogyaSight AI — FastAPI server.
+Nalam AI — FastAPI server.
 
 Exposes a single POST /extract endpoint that teammates (safety-check layer,
 voice layer, frontend) call with a medical document image.
@@ -48,15 +48,15 @@ _ALLOWED_CONTENT_TYPES = {
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown events."""
-    logger.info("🚀 ArogyaSight AI extraction server starting")
+    logger.info("🚀 Nalam AI extraction server starting")
     yield
-    logger.info("ArogyaSight AI extraction server shutting down")
+    logger.info("Nalam AI extraction server shutting down")
 
 
 # ─── FastAPI app ─────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="ArogyaSight AI — Document Extraction",
+    title="Nalam AI — Document Extraction",
     description=(
         "Upload a medical document image (prescription or lab report) "
         "and receive structured JSON + a doctor-facing clinical summary."
