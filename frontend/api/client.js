@@ -1,5 +1,5 @@
 /**
- * API Client — handles communication with the ArogyaSight backend.
+ * API Client — handles communication with the Nalam AI backend.
  *
  * Three modes controlled by config:
  *   "mock"  → returns mock data instantly (no network)

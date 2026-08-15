@@ -1,5 +1,5 @@
 """
-Test harness for the ArogyaSight AI safety flagging module.
+Test harness for the Nalam AI safety flagging module.
 
 Tests the guideline cross-reference engine against planted anomalies
 to prove the flagging logic catches real issues without over-flagging
@@ -498,7 +498,7 @@ def _run_all_tests():
     ]
 
     print(f"\n{'=' * 70}")
-    print(f"  ArogyaSight AI — Safety Flagging Test Harness")
+    print(f"  Nalam AI — Safety Flagging Test Harness")
     print(f"  {len(test_functions)} test(s) found")
     print(f"{'=' * 70}\n")
 

@@ -1,5 +1,5 @@
 """
-ArogyaSight AI — Guideline Cross-Reference & Safety Flagging Module.
+Nalam AI — Guideline Cross-Reference & Safety Flagging Module.
 
 This module cross-references extracted medical data (medicines, lab tests)
 against a curated, verified knowledge base and flags anomalies before

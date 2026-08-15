@@ -1,1 +1,1 @@
-# ArogyaSight AI — Extraction Module
+# Nalam AI — Extraction Module

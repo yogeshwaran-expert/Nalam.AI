@@ -1,5 +1,5 @@
 """
-Test harness for the ArogyaSight AI extraction pipeline.
+Test harness for the Nalam AI extraction pipeline.
 
 Scans data/sample_documents/ for image files, runs extraction on each,
 and prints a summary table of results for quick quality eyeballing.
@@ -98,7 +98,7 @@ def run_tests():
         return
 
     print(f"\n{'=' * 70}")
-    print(f"  ArogyaSight AI — Extraction Test Harness")
+    print(f"  Nalam AI — Extraction Test Harness")
     print(f"  Found {len(images)} sample image(s) in: {SAMPLE_DIR}")
     print(f"{'=' * 70}\n")
 

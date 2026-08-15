@@ -79,12 +79,17 @@ def _normalize_frequency(freq: str) -> str:
     """Normalize a frequency string for comparison.
 
     Strips whitespace, lowercases, and normalises common variants.
+    Uses word-boundary regex to avoid corrupting substrings
+    (e.g. 'codeine' should not become 'conce dailyeine').
     """
     f = freq.strip().lower()
-    # Normalise some common OCR/handwriting variants
-    f = f.replace("od", "once daily").replace("bd", "twice daily")
-    f = f.replace("tid", "thrice daily").replace("tds", "thrice daily")
-    f = f.replace("qid", "four times daily").replace("qds", "four times daily")
+    # Normalise common OCR/handwriting abbreviations using word boundaries
+    f = re.sub(r"\bod\b", "once daily", f)
+    f = re.sub(r"\bbd\b", "twice daily", f)
+    f = re.sub(r"\btid\b", "thrice daily", f)
+    f = re.sub(r"\btds\b", "thrice daily", f)
+    f = re.sub(r"\bqid\b", "four times daily", f)
+    f = re.sub(r"\bqds\b", "four times daily", f)
     return f
 
 
