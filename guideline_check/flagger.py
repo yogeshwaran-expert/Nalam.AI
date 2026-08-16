@@ -104,6 +104,57 @@ def _frequency_matches(extracted_freq: str, common_freqs: list[str]) -> bool:
     return False
 
 
+def _doses_per_day(frequency: str) -> float | None:
+    """Return a safe, deterministic daily-dose multiplier when known.
+
+    PRN and ranged instructions (for example, "every 4-6 hours") do not have
+    one reliable daily total, so callers must not use them for a max-dose
+    comparison.
+    """
+    normalised = _normalize_frequency(frequency)
+    fixed = {
+        "once daily": 1.0,
+        "twice daily": 2.0,
+        "thrice daily": 3.0,
+        "four times daily": 4.0,
+    }
+    for phrase, multiplier in fixed.items():
+        if phrase in normalised:
+            return multiplier
+
+    interval_match = re.search(r"every\s+(\d+(?:\.\d+)?)\s+hours?", normalised)
+    if interval_match:
+        hours = float(interval_match.group(1))
+        if hours > 0 and 24 % hours == 0:
+            return 24 / hours
+    return None
+
+
+def _normalise_unit(unit: str) -> str:
+    """Normalise harmless formatting differences in reported lab units."""
+    return unit.strip().lower().replace("μ", "u").replace("µ", "u").replace(" ", "")
+
+
+_LAB_UNIT_CONVERSIONS: dict[tuple[str, str], float] = {
+    ("g/l", "g/dl"): 0.1,
+    ("g/dl", "g/l"): 10.0,
+    ("mg/l", "mg/dl"): 0.1,
+    ("mg/dl", "mg/l"): 10.0,
+}
+
+
+def _convert_to_reference_unit(
+    value: float, reported_unit: str, reference_unit: str
+) -> float | None:
+    """Convert only explicitly supported units; never guess medical conversions."""
+    reported = _normalise_unit(reported_unit)
+    reference = _normalise_unit(reference_unit)
+    if reported == reference:
+        return value
+    multiplier = _LAB_UNIT_CONVERSIONS.get((reported, reference))
+    return value * multiplier if multiplier is not None else None
+
+
 # ─── Interaction checking ────────────────────────────────────────────────────
 
 
@@ -247,13 +298,15 @@ def check_prescription(extracted_data: dict[str, Any]) -> dict[str, Any]:
                             source="knowledge_base",
                         )
                     )
-                elif max_daily is not None and dosage_mg > max_daily:
+                elif max_daily is not None and (doses_per_day := _doses_per_day(frequency)) is not None and dosage_mg * doses_per_day > max_daily:
+                    daily_dose_mg = dosage_mg * doses_per_day
                     flags.append(
                         SafetyFlag(
                             severity="warning",
                             related_to=kb_name,
                             message=(
-                                f"Dosage of {dosage_str} ({dosage_mg:.0f}mg) "
+                                f"Daily dose of {dosage_str} × {doses_per_day:g} "
+                                f"({daily_dose_mg:.0f}mg/day) "
                                 f"exceeds the typical maximum daily dose of "
                                 f"{max_daily:.0f}mg for {kb_name} — please "
                                 f"confirm with your doctor."
@@ -330,6 +383,7 @@ def check_lab_report(extracted_data: dict[str, Any]) -> dict[str, Any]:
     for test in tests:
         test_name = test.get("test_name", "")
         value_str = test.get("value", "")
+        reported_unit = test.get("unit", "")
 
         # 1. Match against KB
         kb_entry = match_lab_test(test_name)
@@ -367,13 +421,34 @@ def check_lab_report(extracted_data: dict[str, Any]) -> dict[str, Any]:
             )
             continue
 
-        # 3. Determine the widest normal range (union of male/female)
+        # 3. Ensure the reported unit is comparable with the knowledge base.
+        reference_unit = kb_entry.get("unit", "")
+        converted_value = _convert_to_reference_unit(
+            numeric_value, reported_unit, reference_unit
+        )
+        if converted_value is None:
+            flags.append(
+                SafetyFlag(
+                    severity="caution",
+                    related_to=kb_name,
+                    message=(
+                        f"Could not safely compare {kb_name} because the reported "
+                        f"unit '{reported_unit or 'missing'}' does not match the "
+                        f"reference unit '{reference_unit}'. Please verify the lab report."
+                    ),
+                    source="unit_mismatch",
+                )
+            )
+            continue
+
+        # 4. Use the overlap, not the union, of sex-specific ranges. Without
+        # demographic context this avoids falsely calling a result normal.
         range_male = kb_entry.get("normal_range_male", [])
         range_female = kb_entry.get("normal_range_female", [])
 
         if len(range_male) == 2 and len(range_female) == 2:
-            normal_low = min(range_male[0], range_female[0])
-            normal_high = max(range_male[1], range_female[1])
+            normal_low = max(range_male[0], range_female[0])
+            normal_high = min(range_male[1], range_female[1])
         elif len(range_male) == 2:
             normal_low, normal_high = range_male
         elif len(range_female) == 2:
@@ -383,9 +458,10 @@ def check_lab_report(extracted_data: dict[str, Any]) -> dict[str, Any]:
 
         critical_low = kb_entry.get("critical_low")
         critical_high = kb_entry.get("critical_high")
-        unit = kb_entry.get("unit", "")
+        unit = reference_unit
+        numeric_value = converted_value
 
-        # 4. Compare and flag
+        # 5. Compare and flag
         if normal_low <= numeric_value <= normal_high:
             # Within normal range — no flag needed (skip "info" for brevity)
             pass

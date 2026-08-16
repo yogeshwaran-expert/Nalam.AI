@@ -113,10 +113,14 @@ def match_drug(extracted_name: str) -> dict[str, Any] | None:
 
     # Fuzzy match
     try:
+        from rapidfuzz import fuzz as rf_fuzz
         from rapidfuzz import process as rf_process
 
         candidates = list(lookup.keys())
-        result = rf_process.extractOne(query, candidates)
+        # Use whole-string similarity, never a partial-token score. Partial
+        # matching can incorrectly map an unrelated test/drug such as
+        # "Zeta Globulin" to "Hemoglobin".
+        result = rf_process.extractOne(query, candidates, scorer=rf_fuzz.ratio)
         if result is not None:
             matched_name, score, _ = result
             if score >= _MATCH_THRESHOLD:
@@ -139,7 +143,7 @@ def match_drug(extracted_name: str) -> dict[str, Any] | None:
         import difflib
 
         candidates = list(lookup.keys())
-        matches = difflib.get_close_matches(query, candidates, n=1, cutoff=0.6)
+        matches = difflib.get_close_matches(query, candidates, n=1, cutoff=0.8)
         if matches:
             logger.debug(
                 "difflib matched drug '%s' → '%s'",
@@ -175,10 +179,11 @@ def match_lab_test(extracted_test_name: str) -> dict[str, Any] | None:
 
     # Fuzzy match
     try:
+        from rapidfuzz import fuzz as rf_fuzz
         from rapidfuzz import process as rf_process
 
         candidates = list(lookup.keys())
-        result = rf_process.extractOne(query, candidates)
+        result = rf_process.extractOne(query, candidates, scorer=rf_fuzz.ratio)
         if result is not None:
             matched_name, score, _ = result
             if score >= _MATCH_THRESHOLD:
@@ -200,7 +205,7 @@ def match_lab_test(extracted_test_name: str) -> dict[str, Any] | None:
         import difflib
 
         candidates = list(lookup.keys())
-        matches = difflib.get_close_matches(query, candidates, n=1, cutoff=0.6)
+        matches = difflib.get_close_matches(query, candidates, n=1, cutoff=0.8)
         if matches:
             logger.debug(
                 "difflib matched lab test '%s' → '%s'",

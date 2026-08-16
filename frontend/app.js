@@ -640,8 +640,8 @@ function renderResults(response) {
     if (data.patient_name) parts.push(`👤 ${data.patient_name}`);
     if (data.doctor_name) parts.push(`👨‍⚕️ ${data.doctor_name}`);
     if (data.date) parts.push(`📅 ${data.date}`);
-    patientInfo.innerHTML = parts.length > 0
-      ? parts.join(' &nbsp;•&nbsp; ')
+    patientInfo.textContent = parts.length > 0
+      ? parts.join(' • ')
       : '👤 Patient info not available in document';
   }
 

@@ -223,19 +223,6 @@ def extract_document(image_path: str) -> dict[str, Any]:
     except (json.JSONDecodeError, ValidationError) as retry_error:
         logger.error("Retry also failed validation: %s", retry_error)
 
-        # Best-effort: return whatever we can parse, with warnings
-        try:
-            cleaned = _strip_markdown_fences(retry_text)
-            best_effort = json.loads(cleaned)
-            if isinstance(best_effort, dict):
-                best_effort.setdefault("extraction_warnings", [])
-                best_effort["extraction_warnings"].append(
-                    f"Schema validation failed after retry: {retry_error}"
-                )
-                return best_effort
-        except json.JSONDecodeError:
-            pass
-
         raise ExtractionError(
             f"Extraction failed after retry. "
             f"First error: {first_error} | Retry error: {retry_error}"
@@ -275,15 +262,22 @@ def _pdf_to_image_bytes(pdf_bytes: bytes, dpi: int = 150) -> bytes:
 
     if doc.page_count == 0:
         raise ExtractionError("The uploaded PDF has no pages.")
+    if doc.page_count > 10:
+        raise ExtractionError("PDF has too many pages. Please upload 10 pages or fewer.")
 
     # Render every page and collect pixel-maps
     zoom = dpi / 72  # PyMuPDF's default is 72 DPI
     matrix = fitz.Matrix(zoom, zoom)
     pixmaps: list[fitz.Pixmap] = []
 
+    total_pixels = 0
     for page_num in range(doc.page_count):
         page = doc.load_page(page_num)
         pix = page.get_pixmap(matrix=matrix, alpha=False)
+        total_pixels += pix.width * pix.height
+        if total_pixels > 16_000_000:
+            doc.close()
+            raise ExtractionError("PDF is too large to process safely. Please upload a smaller file.")
         pixmaps.append(pix)
 
     doc.close()

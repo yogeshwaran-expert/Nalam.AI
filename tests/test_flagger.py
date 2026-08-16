@@ -20,6 +20,8 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 
 from guideline_check.flagger import (
+    _convert_to_reference_unit,
+    _doses_per_day,
     _parse_dosage_mg,
     _parse_numeric_value,
     check_lab_report,
@@ -143,6 +145,17 @@ def test_parse_dosage_unparseable():
 def test_parse_dosage_empty():
     """Empty string → None"""
     assert _parse_dosage_mg("") is None
+
+
+def test_daily_dose_multiplier_for_common_frequency():
+    assert _doses_per_day("BD") == 2.0
+    assert _doses_per_day("every 8 hours") == 3.0
+    assert _doses_per_day("as needed") is None
+
+
+def test_supported_lab_unit_conversion():
+    assert _convert_to_reference_unit(145, "g/L", "g/dL") == 14.5
+    assert _convert_to_reference_unit(14.5, "mmol/L", "g/dL") is None
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -433,6 +446,19 @@ def test_critically_high_lab_warning():
         f"Expected warning for critically high glucose, got: {flags}"
 
 
+def test_lab_unit_mismatch_is_not_compared_as_normal():
+    data = _make_lab_report(_make_test("Hemoglobin", "14.5", "mmol/L"))
+    result = check_lab_report(data)
+    flags = _get_flags(result)
+    assert _has_flag_with(flags, severity="caution", related_to="Hemoglobin")
+
+
+def test_lab_unit_conversion_is_compared_in_reference_unit():
+    data = _make_lab_report(_make_test("Hemoglobin", "145", "g/L"))
+    result = check_lab_report(data)
+    assert _get_flags(result) == []
+
+
 def test_unknown_lab_test_caution():
     """'Zeta Globulin' → caution flag: not in reference DB."""
     data = _make_lab_report(
@@ -464,6 +490,14 @@ def test_check_safety_routes_prescription():
     data = _make_prescription(_make_medicine("Metformin", "500mg", "twice daily"))
     result = check_safety(data)
     assert "flags" in result
+
+
+def test_daily_dose_above_maximum_is_a_warning():
+    data = _make_prescription(
+        _make_medicine("Paracetamol", "1000mg", "every 4 hours")
+    )
+    result = check_prescription(data)
+    assert _has_flag_with(result["flags"], severity="warning", related_to="Paracetamol")
 
 
 def test_check_safety_routes_lab_report():

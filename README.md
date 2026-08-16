@@ -52,3 +52,19 @@ Improved health literacy and autonomy for patients who currently rely on guesswo
 ⚠️ Disclaimer
 
 Nalam AI is a decision-support and health-literacy tool. It does not diagnose, prescribe, or replace professional medical advice. All safety flags are advisory — patients and doctors should always verify with a qualified healthcare professional.
+
+## Run locally
+
+1. Install Python 3.11+ and create a virtual environment.
+2. Install dependencies: `python -m pip install -r requirements.txt`
+3. Copy `.env.example` to `.env`, then set a valid `ANTHROPIC_API_KEY`.
+4. Start the API: `python -m uvicorn api.main:app --reload`
+5. Serve the `frontend/` directory from `http://localhost:5500` (or add its exact origin to `ALLOWED_ORIGINS`).
+6. Run verification: `python -m pytest -q`
+
+## Safety and deployment defaults
+
+- Uploads are limited to 10 MB by default (`MAX_UPLOAD_BYTES`) and are verified against their declared file signature.
+- PDFs are limited to 10 pages and 16 million rendered pixels before they are sent to the extraction model.
+- The API accepts only explicitly configured frontend origins. Set `ALLOWED_ORIGINS` to the HTTPS domains you control before deployment.
+- Do not log, retain, or expose uploaded medical documents. Production deployments still require an authentication, consent, audit, and data-retention design appropriate to the organisation and jurisdiction.
